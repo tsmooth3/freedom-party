@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { prerendered } from './../../.svelte-kit/adapter-node/manifest.js';
 	import flag  from '$lib/images/flag.gif'
 	import { confetti } from '@neoconfetti/svelte';
 	import { reduced_motion } from './reduced-motion';
@@ -22,8 +21,8 @@
 	const currentYear = today.getFullYear();
 	const currentMonth = today.getMonth();
 	const currentDay = today.getDate();
-	// export const currentDate = new Date(currentYear, currentMonth, currentDay);
-	export const currentDate = new Date(currentYear, 6, 1);
+	export const currentDate = new Date(currentYear, currentMonth, currentDay);
+	// export const currentDate = new Date(currentYear, 6, 1);
 	export const lastFourth = new Date(currentYear-1, 6, 4);
 	export const theFourth = new Date(currentYear, 6, 4);
 	export const lastpartyDay = getPartyDay(lastFourth);
@@ -79,19 +78,19 @@
 
 </script>
 
+{#if isVisible}
+	<div style="position: absolute; left: {x}px; top:{y}px;"
+	use:confetti={{
+		particleCount: $reduced_motion ? 0 : undefined,
+		force: 0.7,
+		stageWidth: window.innerWidth,
+		stageHeight: window.innerHeight,
+		colors: ['#ff3e00', '#40b3ff', '#676778'],
+		destroyAfterDone: true
+	}}
+/>
+{/if}
 {#if daysToFreedom === 0}
-	{#if isVisible}
-		<div style="position: absolute; left: {x}px; top:{y}px;"
-		use:confetti={{
-			particleCount: $reduced_motion ? 0 : undefined,
-			force: 0.7,
-			stageWidth: window.innerWidth,
-			stageHeight: window.innerHeight,
-			colors: ['#ff3e00', '#40b3ff', '#676778'],
-			destroyAfterDone: true
-		}}
-	/>
-	{/if}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
 		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 			<h1 class="h1">LET'S PARTY!</h1>
@@ -111,14 +110,14 @@
 	/>
 {:else}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary">
+		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary on:click={handleClick} on:keypress={undefined}">
 			<h3 class="h3">{daysSinceFreedom} Days Since Last Freedom Party!</h3>
 			<h4 class="h4">{lastpartyDay.toDateString()}</h4>
 		</div> 
 	</div>
 
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary">
+		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary on:click={handleClick} on:keypress={undefined}">
 			<h3 class="h3">{daysToFreedom} Days Until Next Freedom Party!</h3>
 			<h4 class="h4">{partyDay.toDateString()}</h4>
 		</div> 
