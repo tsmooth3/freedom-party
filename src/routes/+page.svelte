@@ -110,14 +110,14 @@
 	/>
 {:else}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary on:click={handleClick} on:keypress={undefined}">
+		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 			<h3 class="h3">{daysSinceFreedom} Days Since Last Freedom Party!</h3>
 			<h4 class="h4">{lastpartyDay.toDateString()}</h4>
 		</div> 
 	</div>
 
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary on:click={handleClick} on:keypress={undefined}">
+		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 			<h3 class="h3">{daysToFreedom} Days Until Next Freedom Party!</h3>
 			<h4 class="h4">{partyDay.toDateString()}</h4>
 		</div> 

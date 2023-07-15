@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ammos, clays, hit, miss, clear } from '$lib/stores/store.ts'
+    import { ammos, clays, hit, miss, clear } from '$lib/stores/store'
 </script>
 
 <div class="flex flex-col my-auto px-30 text-center ">
