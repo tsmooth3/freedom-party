@@ -42,5 +42,5 @@
     </Accordion>
 </div>
 <div class="flex my-auto min-w-[390px]">
-    <img class="flex-1 mx-auto max-w-[690px]" src={doglaugh} alt="duck hunt dog"/>
+    <img class="flex-1 mx-auto min-w-[390px] max-w-[690px]" src={doglaugh} alt="duck hunt dog"/>
 </div>
