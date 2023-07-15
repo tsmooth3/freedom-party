@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   id="svg2"
+   sodipodi:docname="shell.svg"
+   viewBox="0 0 11 27"
+   sodipodi:version="0.32"
+   version="1.0"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs20" />
+  <sodipodi:namedview
+     id="base"
+     bordercolor="#666666"
+     inkscape:pageshadow="2"
+     guidetolerance="10.0"
+     pagecolor="#ffffff"
+     gridtolerance="10.0"
+     inkscape:zoom="22.187428"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     inkscape:current-layer="svg2"
+     inkscape:cx="-0.4281704"
+     inkscape:cy="12.304265"
+     inkscape:window-y="-8"
+     inkscape:window-x="-8"
+     inkscape:window-height="1009"
+     showgrid="true"
+     inkscape:pageopacity="0.0"
+     inkscape:window-width="1920"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       id="grid3176"
+       visible="true"
+       type="xygrid"
+       enabled="true" />
+  </sodipodi:namedview>
+  <g
+     id="g4894"
+     inkscape:transform-center-y="-36.999995"
+     transform="matrix(.027344 0 0 .027344 -12.328 22.662)">
+    <rect
+       id="rect4896"
+       style="stroke:#000000;stroke-linecap:square;stroke-width:36.572;fill:#ffffff"
+       height="804.57"
+       width="292.57"
+       y="-810.51"
+       x="505.72" />
+    <path
+       id="path4898"
+       sodipodi:nodetypes="ccccccccc"
+       style="stroke:#000000;stroke-linecap:square;stroke-width:36.572;fill:#ffffff"
+       d="m505.72-5.933v73.143h-36.57v73.14h365.71v-73.14h-36.57v-73.143h-292.57z" />
+  </g>
+  <metadata
+     id="metadata17">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/publicdomain/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>Shotgun shell outline icon</dc:title>
+        <dc:date>2010-01-24T22:57:55</dc:date>
+        <dc:description>For http://code.google.com/p/violetland/</dc:description>
+        <dc:source>https://openclipart.org/detail/29028/shotgun-shell-outline-icon-by-qubodup</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>qubodup</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>ammo</rdf:li>
+            <rdf:li>ammunition</rdf:li>
+            <rdf:li>arms</rdf:li>
+            <rdf:li>bullet</rdf:li>
+            <rdf:li>patrona</rdf:li>
+            <rdf:li>patrone</rdf:li>
+            <rdf:li>shell</rdf:li>
+            <rdf:li>shotgun</rdf:li>
+            <rdf:li>unchecked</rdf:li>
+            <rdf:li>weapon</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:#aa0000;stroke-width:0.0450706"
+     d="M 2.0056403,11.492995 V 1.0140878 H 5.4986094 8.9915785 V 11.492995 21.971902 H 5.4986094 2.0056403 Z"
+     id="path372" />
+  <path
+     style="fill:#aa8800;stroke-width:0.0450706"
+     d="m 1.0140878,25.487407 v -0.473241 h 0.4957763 0.4957762 v -0.991553 -0.991552 h 3.4929691 3.4929691 v 0.991552 0.991553 H 9.4873548 9.983131 v 0.473241 0.473241 H 5.4986094 1.0140878 Z"
+     id="path512" />
+</svg>

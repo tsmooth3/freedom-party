@@ -1,13 +1,124 @@
-<!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
+<script lang="ts">
+	import flag  from '$lib/images/flag.gif'
+	// Get today's date
+	export const today = new Date();
+	const currentYear = today.getFullYear();
+	const currentMonth = today.getMonth();
+	const currentDay = today.getDate();
+	export const currentDate = new Date(currentYear, currentMonth, currentDay);
+	// export const currentDate = new Date(currentYear, 2, 30);
+	export const lastFourth = new Date(currentYear-1, 6, 4);
+	export const theFourth = new Date(currentYear, 6, 4);
+	export const lastpartyDay = getPartyDay(lastFourth);
+	export const partyDay = getPartyDay(theFourth);
+	if (currentDate > theFourth && currentDate > partyDay) {
+		lastFourth.setFullYear(currentYear);
+		lastpartyDay.setTime(getPartyDay(lastFourth).getTime());
+		theFourth.setFullYear(currentYear + 1);
+		partyDay.setTime(getPartyDay(theFourth).getTime());
+	}
+	export let daysToFreedom = calcDaysToFreedom();
+	export let daysSinceFreedom = calcDaysSinceFreedom();
 
-<div class="container h-full mx-auto flex justify-center items-center">
-	<div class="space-y-5">
-		<h1 class="h1">Let's get cracking bones!</h1>
-		<p>Start by exploring:</p>
-		<ul>
-			<li><code class="code">/src/routes/+layout.svelte</code> - barebones layout, the CSS import order is critical!</li>
-			<li><code class="code">/src/app.postcss</code> - minimal css to make the page full screen, may not be relevant for your project</li>
-			<li><code class="code">/src/routes/+page.svelte</code> - this page, you can replace the contents</li>
-		</ul>
-	</div>
+
+	// figure out today and days to next freedom party
+	function getPartyDay(x: Date): Date {
+		const weekday = x.getDay();
+		if (weekday === 0) {
+		return new Date(x.getTime() - 1 * 24 * 60 * 60 * 1000);
+		}
+		if (weekday === 1) {
+		return new Date(x.getTime() - 2 * 24 * 60 * 60 * 1000);
+		}
+		if (weekday === 2) {
+		return new Date(x.getTime() - 3 * 24 * 60 * 60 * 1000);
+		}
+		if (weekday === 3) {
+		return new Date(x.getTime() + 3 * 24 * 60 * 60 * 1000);
+		}
+		if (weekday === 4) {
+		return new Date(x.getTime() + 2 * 24 * 60 * 60 * 1000);
+		}
+		if (weekday === 5) {
+		return new Date(x.getTime() + 1 * 24 * 60 * 60 * 1000);
+		}
+		if (weekday === 6) {
+		return new Date(x.getTime());
+		}
+		throw new Error("Invalid weekday");
+  	}
+
+
+	function calcDaysToFreedom(): number {
+		// Calculate days to freedom
+		const daysToFreedom = Math.floor((partyDay.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000));
+		return daysToFreedom;
+	}
+	function calcDaysSinceFreedom(): number {
+		// Calculate days to freedom
+		const daysSinceFreedom = Math.floor((currentDate.getTime() - lastpartyDay.getTime()) / (24 * 60 * 60 * 1000));
+		return daysSinceFreedom;
+	}
+
+</script>
+<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
+	<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary">
+		<h3 class="h3">{daysSinceFreedom} Days Since Last Freedom Party!</h3>
+		<h4 class="h4">{lastpartyDay.toDateString()}</h4>
+	</div> 
 </div>
+
+<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
+	<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary">
+		<h3 class="h3">{daysToFreedom} Days Until Next Freedom Party!</h3>
+		<h4 class="h4">{partyDay.toDateString()}</h4>
+	</div> 
+</div>
+
+<div class="flex min-w-[390px] max-w-6xl my-auto mx-auto ">
+	<a class="card card-hover m-3 overflow-hidden variant-outline-primary" href="https://founders.archives.gov/documents/Adams/04-02-02-0016">
+		<header>
+			<img src={flag} class="w-full" alt="Post" />
+		</header>
+		<div class="p-4 space-y-4">
+			<h2 class="h2" data-toc-ignore>Celebrating Freedom!</h2>
+			<blockquote class="blockquote border-blue-600">
+				<p>
+					But the Day is past. The Second Day of
+					<span class="highlight highlight-variant-2 highlight-red-500">July</span>
+					<span class="highlight highlight-variant-2 highlight-red-500">1776, </span>
+					will be the most memorable Epocha, in the History of America.
+					I am apt to believe that 
+					<span class="highlight highlight-variant-3 highlight-red-500">it</span>
+					<span class="highlight highlight-variant-3 highlight-red-500">will</span>
+					<span class="highlight highlight-variant-3 highlight-red-500">be</span>
+					<span class="highlight highlight-variant-3 highlight-red-500">celebrated,</span>
+					by succeeding Generations, as the great anniversary Festival. It ought to be 
+					commemorated, as the Day of Deliverance by solemn Acts of Devotion 
+					to God Almighty. 
+					It ought to be solemnized with
+					<span class="highlight highlight-variant-3 highlight-red-500">Pomp</span> and 
+					<span class="highlight highlight-variant-3 highlight-blue-500">Parade,</span> with
+					<span class="highlight highlight-variant-3 highlight-red-500">Shews,</span>
+					<span class="highlight highlight-variant-3 highlight-blue-500">Games,</span>
+					<span class="highlight highlight-variant-3 highlight-red-500">Sports,</span>
+					<span class="highlight highlight-variant-3 highlight-blue-500">Guns,</span>
+					<span class="highlight highlight-variant-3 highlight-red-500">Bells,</span>
+					<span class="highlight highlight-variant-2 highlight-blue-500">Bonfires</span> and
+					<span class="highlight highlight-variant-3 highlight-red-500">Illuminations</span> from
+					one End	of this	Continent to the other from this Time forward
+					<span class="highlight highlight-variant-4 highlight-red-500">forever</span>
+					<span class="highlight highlight-variant-4 highlight-red-500"> more.</span>
+				</p>
+			</blockquote>
+		</div>
+		<hr class="opacity-50" />
+		<footer class="p-4 flex justify-start items-center space-x-4">
+			<div class="flex-auto flex justify-between items-center">
+				<h6 class="font-bold">John Adams</h6>
+				<small>Philadelphia {new Date(1776, 6, 3).toDateString()}</small>
+			</div>
+		</footer>
+	</a>
+</div>
+
