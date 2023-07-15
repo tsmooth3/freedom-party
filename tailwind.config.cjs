@@ -10,5 +10,5 @@ module.exports = {
 	theme: {
 		extend: {},
 	},
-	plugins: [forms,typography,...skeleton()],
+	plugins: [forms,typography,...skeleton(),require('tailwindcss-highlights')],
 }
