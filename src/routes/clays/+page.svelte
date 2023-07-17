@@ -9,7 +9,7 @@
 <svelte:window bind:innerWidth={screenSize} />
 
 <div class="flex my-auto min-w-[390px] justify-center">
-    <a href="/clays/manageevent"><button type="button" class="btn variant-filled">Add Event</button></a>
+    <a href="/shootEvents"><button type="button" class="btn variant-filled">Add Event</button></a>
 </div>
 <div class="flex my-auto min-w-[390px]">
     <Accordion>
