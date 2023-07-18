@@ -1,75 +1,128 @@
 <script lang="ts">
-	import type { Data } from '@skeletonlabs/skeleton/dist/utilities/DataTable/types';
-    import type { PageData } from './$types';
-	import { invalidateAll } from '$app/navigation';
+    import { Step, Toast, toastStore, type ToastSettings, Stepper } from '@skeletonlabs/skeleton';
+    import type { ActionData, PageData, SubmitFunction } from './$types';
+	import { enhance } from '$app/forms';
+    import shell from '$lib/images/shell.svg'
+	import clay from '$lib/images/capshield.svg'
+
     
     export let data: PageData;
-    type responseData = {
-        success: boolean
-        errors: Record<string, string>
-    }
+    export let form: ActionData;
 
-    let form: responseData
+    let loading = false
+    
+    const t: ToastSettings = {
+        message: 'Success',
+        hideDismiss: true,
+        timeout: 1000,
+        background: 'variant-ghost-success'
+    };
 
-    async function addShootEvent(event: Event) {
-        const formEl = event.target as HTMLFormElement
-        const data = new FormData(formEl)
+    const addEvent: SubmitFunction = (input) => {
 
-        console.dir(data);
+        loading = true
 
-        const response = await fetch(formEl.action, {
-            method: 'POST',
-            body: data
-        })
+        return async ( { update }) => {
+            loading = false
+            toastStore.trigger(t);
+            await update()
+        }
 
-        const responseData = await response.json();
-
-        form = responseData
-        formEl.reset()
-
-        await invalidateAll();
-
-    }
-
-    async function removeShootEvent(event: Event) {
-        const formEl = event.target as HTMLFormElement
-        const data = new FormData(formEl)
-
-        const response = await fetch(formEl.action, {
-            method: 'DELETE',
-            body: data
-        });
-
-        await invalidateAll();
     }
 
 </script>
 
-<pre>
-    {JSON.stringify(data, null, 2)}
-</pre>
+{#if form?.success}
+    <Toast />
+{/if}
 
-<br/>
-<br/>
-<div class="flex m-10 justify-center">
-    <form on:submit|preventDefault={addShootEvent} method="POST">
-        <button class="btn variant-filled-primary" type="submit">Add Event</button>
+<div class="m-10">
+    <form method="POST" action="?/addShootEvent" use:enhance={addEvent}>
+        <button class="btn variant-filled-primary" type="submit">New Event</button>
     </form>
 </div>
+{#each data.shootEvents as se}
+    <div class="container flex flex-col my-auto mx-10 p-10 justify-around">
+        <div class="flex-1 card p-10">
+            {se.eventDate.toString()}
+            <form method="POST" action="?/removeShootEvent" use:enhance>
+                <input type="hidden" name="id" value={se.eventId}/>
+                <button class="btn variant-ghost-error" type="submit">Remove Event</button>
+            </form>
 
-<div>
-    {#each data.shootEvents as shootEvent}
-        <div class="flex card mx-10 max-w-[650px] justify-evenly">
-            <div class="flex-1 mx-5 my-auto text-center">
-                {shootEvent.eventDate.toString()}
-            </div>
-            <div class="flex-1 mx-10 text-end">
-
-                <form on:submit|preventDefault={removeShootEvent} method="POST">
-                    <input type="hidden" name="id" value={shootEvent.eventId}/>
-                    <button class=" btn-xl variant-outline-primary" type="submit">X</button>
+            <div class="flex-1 card p-5 m-5">
+                <form method="POST" action="?/addRoundToShootEvent" use:enhance={addEvent}>
+                    <input class="variant-form-material" type="hidden" name="id" value={se.eventId}/>
+                    <label class="label">
+                        <span>Round Name</span>
+                        <input class="input" type="text" name="roundName" value="Round{se.eventFormat.length + 1}" />
+                        <span>Ammo</span>
+                        <input class="input" type="text" name="roundAmmo" value="12" />
+                        {#if form?.missingAmmo}
+                            <p class=" variant-soft-error">required</p>
+                        {/if}
+                        <span>Clays</span>
+                        <input class="input" type="text" name="roundClays" value="6" />
+                        {#if form?.missingClays}
+                            <p class=" variant-soft-error">required</p>
+                        {/if}
+                    </label>
+                    <button type="submit" class="btn variant-filled items-end">+</button>       
                 </form>
+
+                <div class="flex flex-wrap justify-around">
+                    {#each se.eventFormat as r}
+                        <div class="flex-1 card m-3 p-3">
+                            <span class="h2">{r.roundName}</span>
+                            <div class="flex flex-wrap my-0 mx-2 justify-around">
+                                {#each r.roundClays.split('') as c}
+                                    <img class="w-5" src={clay} alt="clay">
+                                {/each}
+                            </div>
+                            <div class="flex flex-wrap m-2 p-2 justify-center">
+                                {#each r.roundAmmo.split('') as a}
+                                    <img class="w-3" src={shell} alt="shell">
+                                {/each}
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+            <div class="flex-1 card p-5 m-5">
+                <form method="POST" action="?/addTeamToShootEvent" use:enhance>
+                    <input class="variant-form-material" type="hidden" name="id" value={se.eventId}/>
+                    <label class="label">
+                        <span>Team Name</span>
+                        <input class="input" type="text" name="teamName" />
+                        {#if form?.missingName}
+                            <p class=" variant-soft-error">required</p>
+                        {/if}
+                        <span>Shooter 1</span>
+                        <input class="input" type="text" name="shooter1" />
+                        {#if form?.missingS1}
+                            <p class=" variant-soft-error">required</p>
+                        {/if}
+                        <span>Shooter 2</span>
+                        <input class="input" type="text" name="shooter2"/>
+                        {#if form?.missingS2}
+                            <p class=" variant-soft-error">required</p>
+                        {/if}
+                    </label>
+                    <button type="submit" class="btn variant-filled items-end">+</button>       
+                </form>
+                <div class="flex flex-wrap justify-around">
+                    {#each se.eventTeamScores as t}
+                        <div class="flex-1 card m-3 p-3">
+                            <span class="h2">{t.teamName}</span>
+                            <span class="h6">{t.shooter1} | {t.shooter2}</span>
+                        </div>
+                    {/each}
+                </div>
             </div>
         </div>
-    {/each}
-</div> 
+    </div>
+{/each}
+
+<pre>
+    {JSON.stringify(data, null, 4)}
+</pre>

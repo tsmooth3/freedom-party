@@ -6,7 +6,7 @@ export type ShootEvent = {
     eventFormat: EventRound[]
     eventTeamScores: TeamScore[]
 }
-type EventRound = {
+export type EventRound = {
     roundId: number
     roundName: string
     roundClays: string
@@ -14,7 +14,7 @@ type EventRound = {
     roundActive: boolean
     roundComplete: boolean
 }
-type TeamScore = {
+export type TeamScore = {
     teamId: number
     teamName: string
     shooter1: string
@@ -22,10 +22,11 @@ type TeamScore = {
     roundScores: EventRound[]
 }
 
+let startUp = Date.now()
 
 let shootEvents: ShootEvent[] = [
     {
-        eventId: Date.now(),
+        eventId: startUp,
         eventDate: new Date(),
         eventActive: false,
         eventComplete: false,
@@ -50,14 +51,6 @@ let round2: EventRound = {
     roundAmmo: '----',
     roundClays: '--',
 }
-let round6: EventRound = {
-    roundId: 6,
-    roundName: "Shenanigans",
-    roundActive: false,
-    roundComplete: false,
-    roundAmmo: '----',
-    roundClays: '----',
-}
 let team1: TeamScore = {
     teamId: 1,
     teamName: 'Freedom Frogs',
@@ -73,11 +66,10 @@ let team2: TeamScore = {
     roundScores: [],
 }
 
-addRoundToEvent(shootEvents[0],round1)
-addRoundToEvent(shootEvents[0],round2)
-addRoundToEvent(shootEvents[0],round6)
-addTeamToEvent(shootEvents[0], team1)
-addTeamToEvent(shootEvents[0], team2)
+addRoundToEvent(startUp,round1)
+addTeamToEvent(startUp, team1)
+addRoundToEvent(startUp,round2)
+addTeamToEvent(startUp, team2)
 
 export function addShootEvent(se: ShootEvent) {
     const shootEvent: ShootEvent = {
@@ -91,24 +83,38 @@ export function addShootEvent(se: ShootEvent) {
     shootEvents.push(shootEvent);
 }
 
-export function addRoundToEvent(se: ShootEvent, ef: EventRound) {
-    se.eventFormat.push(ef)
+
+
+export function addRoundToEvent(id: number, ef: EventRound) {
+    let se = shootEvents.find( (e) => e.eventId === id)
+    if(se){
+        se.eventFormat.push(ef);
+        se.eventTeamScores.forEach(team => {
+            if(se) team.roundScores = se.eventFormat
+        })
+    }
 }
 
-export function clearEventRounds(se: ShootEvent) {
-    se.eventFormat = []
+export function addTeamToEvent(id: number, t: TeamScore) {
+    let se = shootEvents.find((e) => e.eventId === id)
+    if(se){
+        se.eventFormat.forEach(round => {
+            t.roundScores.push(round)
+        });
+        se.eventTeamScores.push(t)
+    }
 }
 
-export function clearEventTeams(se: ShootEvent) {
-    se.eventTeamScores = []
+export function clearEventRounds(id: number) {
+    let se = shootEvents.find((e) => e.eventId === id)
+    if(se) se.eventFormat = []
 }
 
-export function addTeamToEvent(se: ShootEvent, t: TeamScore) {
-    se.eventFormat.forEach(round => {
-        t.roundScores.push(round)
-    });
-    se.eventTeamScores.push(t)
+export function clearEventTeams(id: number) {
+    let se = shootEvents.find((e) => e.eventId === id)
+    if(se) se.eventTeamScores = []
 }
+
 
 export function removeShootEvent(id: number) {
     shootEvents = shootEvents.filter((shootEvent) => shootEvent.eventId != id);
@@ -120,4 +126,7 @@ export function clearShootEvents() {
 
 export function getShootEvents() {
     return shootEvents;
+}
+export function getShootEventById(id: number) : ShootEvent | undefined{
+    return shootEvents.find((e) => e.eventId === id);
 }
