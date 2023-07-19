@@ -1,26 +1,21 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import shell from '$lib/images/shell.svg'
-import clay from '$lib/images/capshield.svg'
 import { addShootEvent, clearEventRounds, clearEventTeams, clearShootEvents, getShootEvents, removeShootEvent, type ShootEvent, type EventRound, addRoundToEvent, getShootEventById, type TeamScore, addTeamToEvent } from '$lib/server/database';
 
-
-
 export const load: PageServerLoad = async () => {
-
     const shootEvents = getShootEvents();
-
     return { shootEvents };
 }
 
 export const actions: Actions = {
     addShootEvent: async ({ request }) => {
         const formData = await request.formData()
+        const uid = Date.now()
         const shootEvent: ShootEvent = {
-            eventId: Date.now(),
+            eventId: uid,
             eventDate: new Date(),
-            eventActive: false,
-            eventComplete: false,
+            eventName: "Freedom_Clays_" + uid,
+            eventState: "NEW",
             eventFormat: [],
             eventTeamScores: [],
         }
@@ -50,9 +45,10 @@ export const actions: Actions = {
             let teamData: TeamScore = {
                 teamId: teamIdIndex,
                 teamName: teamName,
-                shooter1: shooter1,
-                shooter2: shooter2,
-                roundScores: []
+                teamShooter1: shooter1,
+                teamShooter2: shooter2,
+                teamState: "NEW",
+                teamScores: []
             }
             
             addTeamToEvent(eventId, teamData)
@@ -66,31 +62,35 @@ export const actions: Actions = {
             let roundIdIndex = se.eventFormat.length
             if(roundIdIndex >= 0) roundIdIndex++
             const roundName = String(formData.get('roundName'))
-            const ammos = Number(formData.get('roundAmmo'))
-            const clays = Number(formData.get('roundClays'))
+            const roundStations = Number(formData.get('roundStations'))
+            const roundClays = Number(formData.get('roundClays'))
+            const roundAmmo = Number(formData.get('roundAmmo'))
 
             if(!roundName) return fail(400, {roundName, missingName:true})
-            if(!ammos) return fail(400, {ammos, missingAmmo:true})
-            if(!clays) return fail(400, {clays, missingClays:true})
+            if(!roundStations) return fail(400, {roundStations, missingStations:true})
+            if(!roundClays) return fail(400, {roundClays, missingClays:true})
+            if(!roundAmmo) return fail(400, {roundAmmo, missingAmmo:true})
             
             let roundData: EventRound = {
                 roundId: roundIdIndex,
                 roundName: roundName,
-                roundAmmo: "-".repeat(ammos),
-                roundClays: "-".repeat(clays),
-                roundActive: false,
-                roundComplete: false,
+                roundStations: roundStations,
+                roundAmmo: "-".repeat(roundAmmo*roundStations),
+                roundClays: "-".repeat(roundClays*roundStations),
+                roundState: "NEW",
             }
             
             addRoundToEvent(eventId, roundData)
+
+            return {roundStations: roundStations, roundClays: roundClays, roundAmmo: roundAmmo, success: true}
         }
     },
     removeShootEvent: async ({ request }) => {
         const formData = await request.formData()
         const eventId = Number(formData.get('id'));
-
+        
         removeShootEvent(eventId)
-
+        
         return {success: true}
     },
     // removeTeamFromShootEvent: async ({ request }) => {},
@@ -100,8 +100,10 @@ export const actions: Actions = {
     },
     // clearEventTeams: async ({ request }) => {
         // clearEventTeams(request)
-    // },
-    // clearEventRounds: async ({ request }) => {
-        // clearEventRounds()
-    // },
+        // },
+    clearEventRounds: async ({ request }) => {
+        const formData = await request.formData()
+        const eventId = Number(formData.get('id'));
+        clearEventRounds(eventId)
+    },
 }

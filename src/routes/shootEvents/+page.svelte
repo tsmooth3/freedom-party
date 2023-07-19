@@ -8,6 +8,9 @@
     
     export let data: PageData;
     export let form: ActionData;
+    let defaultStations = 3
+    let defaultAmmo = 4
+    let defaultClays = 2
 
     let loading = false
     
@@ -18,8 +21,13 @@
         background: 'variant-ghost-success'
     };
 
-    const addEvent: SubmitFunction = (input) => {
+    const resetForm: SubmitFunction = ({ form }) => {
+		return async ({ update }) => {
+			await update({reset: false});
+		};
+	}
 
+    const addEvent: SubmitFunction = (input) => {
         loading = true
 
         return async ( { update }) => {
@@ -35,54 +43,87 @@
 {#if form?.success}
     <Toast />
 {/if}
-
-<div class="m-10">
+<!-- <pre>
+    {JSON.stringify(form,null,4)}
+</pre> -->
+<div class="flex m-5 justify-end">
     <form method="POST" action="?/addShootEvent" use:enhance={addEvent}>
         <button class="btn variant-filled-primary" type="submit">New Event</button>
     </form>
 </div>
 {#each data.shootEvents as se}
-    <div class="container flex flex-col my-auto mx-10 p-10 justify-around">
-        <div class="flex-1 card p-10">
-            {se.eventDate.toString()}
-            <form method="POST" action="?/removeShootEvent" use:enhance>
-                <input type="hidden" name="id" value={se.eventId}/>
-                <button class="btn variant-ghost-error" type="submit">Remove Event</button>
-            </form>
-
+    <div class="container flex-auto m-5 p-5 justify-around">
+        <div class="flex-1 card p-5">
+            <span class="flex-1 pb-4 h3">
+                {se.eventName}
+            </span>
+            <div class="flex justify-end">
+                <form method="POST" action="?/removeShootEvent" use:enhance>
+                    <input type="hidden" name="id" value={se.eventId}/>
+                    <button class="btn variant-ghost-error" type="submit">Remove Event</button>
+                    <button class="btn variant-ghost-error" type="submit" formaction="?/clearEventRounds">Clear Event Format</button>
+                </form>
+            </div>
+            
             <div class="flex-1 card p-5 m-5">
-                <form method="POST" action="?/addRoundToShootEvent" use:enhance={addEvent}>
+                <form method="POST" action="?/addRoundToShootEvent" use:enhance={resetForm}>
+                    <span class="h3">Event Format</span>
                     <input class="variant-form-material" type="hidden" name="id" value={se.eventId}/>
                     <label class="label">
                         <span>Round Name</span>
                         <input class="input" type="text" name="roundName" value="Round{se.eventFormat.length + 1}" />
-                        <span>Ammo</span>
-                        <input class="input" type="text" name="roundAmmo" value="12" />
-                        {#if form?.missingAmmo}
-                            <p class=" variant-soft-error">required</p>
-                        {/if}
-                        <span>Clays</span>
-                        <input class="input" type="text" name="roundClays" value="6" />
-                        {#if form?.missingClays}
-                            <p class=" variant-soft-error">required</p>
-                        {/if}
                     </label>
+                    <div class="flex m-2 p-2">
+                        <!-- svelte-ignore a11y-label-has-associated-control -->
+                        <label class="flex-1 justify-around">
+                            <span class="chip"># of Stations</span>
+                        </label>
+                        <!-- svelte-ignore a11y-label-has-associated-control -->
+                        <label class="flex-1 justify-around">
+                            <span class="chip">Clays per Station</span>
+                        </label>
+                        <!-- svelte-ignore a11y-label-has-associated-control -->
+                        <label class="flex-1 justify-around">
+                            <span class="chip">Ammo per Station</span>
+                        </label>
+                    </div>
+                    <div class="flex m-2 p-2">
+                        <label class="flex-1 px-3 justify-around">
+                            <input class="input" type="number" name="roundStations" bind:value={defaultStations} min=1 max=6/>
+                            {#if form?.missingStations}
+                                <p class=" variant-soft-error">required</p>
+                            {/if}
+                        </label>
+                        <label class="flex-1 px-3 justify-around">
+                            <input class="input" type="number" name="roundClays" bind:value="{defaultClays}" min=2 max=6/>
+                            {#if form?.missingClays}
+                                <p class=" variant-soft-error">required</p>
+                            {/if}
+                        </label>
+                        <label class="flex-1 px-3 justify-around">
+                            <input class="input" type="number" name="roundAmmo" bind:value="{defaultAmmo}" min=2 max=6/>
+                            {#if form?.missingAmmo}
+                                <p class=" variant-soft-error">required</p>
+                            {/if}
+                        </label>
+                    </div>
+                    <div class="flex m-2 p-2">
+                        <input class="input flex-1 px-5 mx-5 " type="range" bind:value={defaultStations} min=1 max=6/>
+                        <input class="input flex-1 px-5 mx-5" type="range" bind:value={defaultClays} min=2 max=6/>
+                        <input class="input flex-1 px-5 mx-5" type="range" bind:value={defaultAmmo} min=2 max=6/>
+                    </div>
                     <button type="submit" class="btn variant-filled items-end">+</button>       
                 </form>
 
                 <div class="flex flex-wrap justify-around">
                     {#each se.eventFormat as r}
                         <div class="flex-1 card m-3 p-3">
-                            <span class="h2">{r.roundName}</span>
-                            <div class="flex flex-wrap my-0 mx-2 justify-around">
-                                {#each r.roundClays.split('') as c}
-                                    <img class="w-5" src={clay} alt="clay">
-                                {/each}
+                            <span class="h4">{r.roundName}</span>
+                            <div class="flex flex-wrap my-0 mx-2 justify-center">
+                                <img class="w-5" src={clay} alt="clay">x{r.roundClays.length}
                             </div>
                             <div class="flex flex-wrap m-2 p-2 justify-center">
-                                {#each r.roundAmmo.split('') as a}
-                                    <img class="w-3" src={shell} alt="shell">
-                                {/each}
+                                <img class="w-3" src={shell} alt="shell">x{r.roundAmmo.length}
                             </div>
                         </div>
                     {/each}
@@ -114,7 +155,9 @@
                     {#each se.eventTeamScores as t}
                         <div class="flex-1 card m-3 p-3">
                             <span class="h2">{t.teamName}</span>
-                            <span class="h6">{t.shooter1} | {t.shooter2}</span>
+                            <span class="h6">{t.teamShooter1} | {t.teamShooter2}</span>
+                            <span class="h6">{t.teamState}</span>
+                            
                         </div>
                     {/each}
                 </div>

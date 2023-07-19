@@ -1,25 +1,27 @@
+export type EventState = "NEW" | "ACTIVE" | "ONDECK" | "IDLE" | "COMPLETE"
 export type ShootEvent = {
     eventId: number
     eventDate: Date
-    eventActive: boolean
-    eventComplete: boolean
+    eventName: string
+    eventState: EventState
     eventFormat: EventRound[]
     eventTeamScores: TeamScore[]
 }
 export type EventRound = {
     roundId: number
     roundName: string
-    roundClays: string
+    roundStations: number
     roundAmmo: string
-    roundActive: boolean
-    roundComplete: boolean
+    roundClays: string
+    roundState: EventState
 }
 export type TeamScore = {
     teamId: number
     teamName: string
-    shooter1: string
-    shooter2: string
-    roundScores: EventRound[]
+    teamShooter1: string
+    teamShooter2: string
+    teamState: EventState
+    teamScores: EventRound[]
 }
 
 let startUp = Date.now()
@@ -28,8 +30,8 @@ let shootEvents: ShootEvent[] = [
     {
         eventId: startUp,
         eventDate: new Date(),
-        eventActive: false,
-        eventComplete: false,
+        eventName: "Freedom_Clays_" + startUp,
+        eventState: "NEW",
         eventFormat: [],
         eventTeamScores: []
     }
@@ -37,60 +39,42 @@ let shootEvents: ShootEvent[] = [
 
 let round1: EventRound = {
     roundId: 1,
-    roundName: "Round 1",
-    roundActive: false,
-    roundComplete: false,
-    roundAmmo: '----',
-    roundClays: '--',
-}
-let round2: EventRound = {
-    roundId: 2,
-    roundName: "Round 2",
-    roundActive: false,
-    roundComplete: false,
-    roundAmmo: '----',
-    roundClays: '--',
+    roundName: "Round1",
+    roundStations: 3,
+    roundAmmo: '------------',
+    roundClays: '------',
+    roundState: "NEW",
 }
 let team1: TeamScore = {
     teamId: 1,
     teamName: 'Freedom Frogs',
-    shooter1: 'Scott',
-    shooter2: 'Tim',
-    roundScores: [],
-}
-let team2: TeamScore = {
-    teamId: 2,
-    teamName: 'Burt Squared',
-    shooter1: 'Burt Sr.',
-    shooter2: 'Burt Jr.',
-    roundScores: [],
+    teamShooter1: 'Scott',
+    teamShooter2: 'Tim',
+    teamState: "NEW",
+    teamScores: [], 
 }
 
 addRoundToEvent(startUp,round1)
 addTeamToEvent(startUp, team1)
-addRoundToEvent(startUp,round2)
-addTeamToEvent(startUp, team2)
 
 export function addShootEvent(se: ShootEvent) {
     const shootEvent: ShootEvent = {
         eventId: se.eventId,
         eventDate: se.eventDate,
-        eventActive: se.eventActive,
-        eventComplete: se.eventComplete,
+        eventName: se.eventName,
+        eventState: se.eventState,
         eventFormat: se.eventFormat,
         eventTeamScores: se.eventTeamScores
     }
     shootEvents.push(shootEvent);
 }
 
-
-
 export function addRoundToEvent(id: number, ef: EventRound) {
     let se = shootEvents.find( (e) => e.eventId === id)
     if(se){
         se.eventFormat.push(ef);
         se.eventTeamScores.forEach(team => {
-            if(se) team.roundScores = se.eventFormat
+            if(se) team.teamScores = se.eventFormat
         })
     }
 }
@@ -99,7 +83,7 @@ export function addTeamToEvent(id: number, t: TeamScore) {
     let se = shootEvents.find((e) => e.eventId === id)
     if(se){
         se.eventFormat.forEach(round => {
-            t.roundScores.push(round)
+            t.teamScores.push(round)
         });
         se.eventTeamScores.push(t)
     }
@@ -114,7 +98,6 @@ export function clearEventTeams(id: number) {
     let se = shootEvents.find((e) => e.eventId === id)
     if(se) se.eventTeamScores = []
 }
-
 
 export function removeShootEvent(id: number) {
     shootEvents = shootEvents.filter((shootEvent) => shootEvent.eventId != id);
