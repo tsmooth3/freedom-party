@@ -1,11 +1,13 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { addShootEvent, clearEventRounds, clearEventTeams, clearShootEvents, getShootEvents, removeShootEvent, type ShootEvent, type EventRound, addRoundToEvent, getShootEventById, type TeamScore, addTeamToEvent } from '$lib/server/database';
+import { addShootEvent, clearEventRounds, clearEventTeams, clearShootEvents, getShootEvents, removeShootEvent, addRoundToEvent, getShootEventById, addTeamToEvent } from '$lib/server/database';
+import type { EventState, ShootEvent, EventRound, TeamScore } from "$lib/shared/utils"
 
 export const load: PageServerLoad = async () => {
     const shootEvents = getShootEvents();
     return { shootEvents };
 }
+
 
 export const actions: Actions = {
     addShootEvent: async ({ request }) => {
@@ -64,7 +66,7 @@ export const actions: Actions = {
             const roundName = String(formData.get('roundName'))
             const roundStations = Number(formData.get('roundStations'))
             const roundClays = Number(formData.get('roundClays'))
-            const roundAmmo = Number(formData.get('roundAmmo'))
+            const roundAmmo = 4
 
             if(!roundName) return fail(400, {roundName, missingName:true})
             if(!roundStations) return fail(400, {roundStations, missingStations:true})

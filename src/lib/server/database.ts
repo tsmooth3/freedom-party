@@ -1,72 +1,13 @@
-export type EventState = "NEW" | "ACTIVE" | "ONDECK" | "IDLE" | "COMPLETE"
-export type ShootEvent = {
-    eventId: number
-    eventDate: Date
-    eventName: string
-    eventState: EventState
-    eventFormat: EventRound[]
-    eventTeamScores: TeamScore[]
-}
-export type EventRound = {
-    roundId: number
-    roundName: string
-    roundStations: number
-    roundAmmo: string
-    roundClays: string
-    roundState: EventState
-}
-export type TeamScore = {
-    teamId: number
-    teamName: string
-    teamShooter1: string
-    teamShooter2: string
-    teamState: EventState
-    teamScores: EventRound[]
-}
+import type { EventState, ShootEvent, EventRound, TeamScore } from "$lib/shared/utils"
 
 let startUp = Date.now()
 
-let shootEvents: ShootEvent[] = [
-    {
-        eventId: startUp,
-        eventDate: new Date(),
-        eventName: "Freedom_Clays_" + startUp,
-        eventState: "NEW",
-        eventFormat: [],
-        eventTeamScores: []
-    }
-]
-
-let round1: EventRound = {
-    roundId: 1,
-    roundName: "Round1",
-    roundStations: 3,
-    roundAmmo: '------------',
-    roundClays: '------',
-    roundState: "NEW",
-}
-let team1: TeamScore = {
-    teamId: 1,
-    teamName: 'Freedom Frogs',
-    teamShooter1: 'Scott',
-    teamShooter2: 'Tim',
-    teamState: "NEW",
-    teamScores: [], 
-}
-
-addRoundToEvent(startUp,round1)
-addTeamToEvent(startUp, team1)
+let shootEvents: ShootEvent[] = []
 
 export function addShootEvent(se: ShootEvent) {
-    const shootEvent: ShootEvent = {
-        eventId: se.eventId,
-        eventDate: se.eventDate,
-        eventName: se.eventName,
-        eventState: se.eventState,
-        eventFormat: se.eventFormat,
-        eventTeamScores: se.eventTeamScores
+    if(!shootEvents.find((e) => e.eventId === se.eventId)){
+        shootEvents.push(se);
     }
-    shootEvents.push(shootEvent);
 }
 
 export function addRoundToEvent(id: number, ef: EventRound) {
@@ -92,6 +33,9 @@ export function addTeamToEvent(id: number, t: TeamScore) {
 export function clearEventRounds(id: number) {
     let se = shootEvents.find((e) => e.eventId === id)
     if(se) se.eventFormat = []
+    se?.eventTeamScores.forEach(team => {
+        team.teamScores = []
+    });
 }
 
 export function clearEventTeams(id: number) {

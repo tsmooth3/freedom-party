@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ShootEvent {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  eventName String
+  eventState String
+  eventFormat EventRound[]
+  eventTeamScores TeamScore[]
+}
+
+model EventRound {
+  id Int @id @default(autoincrement())
+  
+  event ShootEvent @relation(fields: [eventId], references: [id])
+  eventId Int //relation scalr field
+  team TeamScore @relation(fields: [teamId], references: [id])
+  teamId Int
+
+  roundName String
+  roundStations Int
+  roundAmmo String
+  roundClays String
+  roundState String
+}
+
+model TeamScore {
+  id Int @id @default(autoincrement())
+  
+  event ShootEvent @relation(fields: [eventId], references: [id])
+  eventId Int
+  
+  teamName String
+  teamShooter1 String
+  teamShooter2 String
+  teamState String
+  teamScores EventRound[]
+}

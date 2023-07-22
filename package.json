@@ -40,6 +40,8 @@
 	"type": "module",
 	"dependencies": {
 		"@neoconfetti/svelte": "^1.0.0",
+		"@prisma/client": "^5.0.0",
+		"prisma": "^5.0.0",
 		"svelte-confetti-explosion": "^0.4.0"
 	}
 }
