@@ -14,6 +14,8 @@ export type EventRound = {
     roundStations: number
     roundAmmo: string
     roundClays: string
+    roundAmmoNum: string
+    roundClaysNum: string
     roundState: EventState
 }
 export type TeamScore = {

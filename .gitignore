@@ -9,3 +9,6 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 firebase-debug.log
+/prisma/dev.db
+prisma/dev.db
+prisma/dev.db
