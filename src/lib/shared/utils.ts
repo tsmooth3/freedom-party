@@ -26,3 +26,35 @@ export type TeamScore = {
     teamState: EventState
     teamScores: EventRound[]
 }
+export type prismaShootEvent = {
+    id: number
+    createdAt: Date
+    updatedAt: Date
+    eventName: string
+    eventState: EventState
+    eventTeamScores: prismaTeamScore[]
+}
+export type prismaTeamScore = {
+    [x: string]: any;
+    teamId: number
+    eventId: number
+    teamName: string
+    teamShooter1: string
+    teamShooter2: string
+    teamState: EventState
+    teamTotal: number | null
+    teamShotsFired: number | null
+    teamScores: prismaEventRound[]
+}
+
+export type prismaEventRound = {
+    id: number
+    eventId: number
+    teamId: number
+    roundName: string
+    roundIndex: number
+    roundStations: number
+    roundAmmo: string
+    roundClays: string
+    roundState: EventState
+}

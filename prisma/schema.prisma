@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -30,6 +31,7 @@ model EventRound {
   teamId  Int
 
   roundName     String
+  roundIndex    Int
   roundStations Int
   roundAmmo     String
   roundClays    String
@@ -42,10 +44,11 @@ model TeamScore {
   event   ShootEvent @relation(fields: [eventId], references: [id])
   eventId Int
 
-  teamName     String
-  teamShooter1 String
-  teamShooter2 String
-  teamState    String
-  teamScores   EventRound[]
-  teamTotal    Int?
+  teamName       String
+  teamShooter1   String
+  teamShooter2   String
+  teamState      String
+  teamScores     EventRound[]
+  teamTotal      Int?         @default(0)
+  teamShotsFired Int?         @default(0)
 }

@@ -1,21 +1,9 @@
 <script lang="ts">
-	import {
-		Step,
-		Stepper,
-		type TableSource,
-		tableMapperValues,
-		Table
-	} from '@skeletonlabs/skeleton';
+	import { Step, Stepper, tableMapperValues, Table } from '@skeletonlabs/skeleton';
 	import { thisEvent, resetShootEvent } from '$lib/client/localStoragedb';
 	import shell from '$lib/images/shell.svg';
 	import clay from '$lib/images/capshield.svg';
-	import type { PageData } from '../$types';
-	import { redirect } from '@sveltejs/kit';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
-	export let data: PageData;
-
-	$: dbShootEvents = data;
+	import { goto } from '$app/navigation';
 
 	let inputStations = 3;
 	let inputClays = 2;
@@ -95,7 +83,7 @@
 	}
 	let toast: any;
 	async function callAddShootEvent() {
-		const response = await fetch('api/addShootEvent', {
+		const response = await fetch('api/shootEvents', {
 			method: 'POST',
 			body: JSON.stringify($thisEvent),
 			headers: {

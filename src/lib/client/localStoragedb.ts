@@ -1,6 +1,7 @@
 import { localStorageStore } from '@skeletonlabs/skeleton';
 import type { Writable } from 'svelte/store';
-import type { ShootEvent, TeamScore } from "$lib/shared/utils"
+import { derived } from 'svelte/store';
+import type { ShootEvent, TeamScore, prismaShootEvent, prismaTeamScore } from "$lib/shared/utils"
 
 export let localShootEvents: ShootEvent[] = []
 let uid = Date.now();
@@ -12,9 +13,20 @@ export let localShootEvent: ShootEvent = {
     eventFormat: [],
     eventTeamScores: []
 }
+export let localprismaShootEvent: prismaShootEvent = {
+    id: -1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    eventName: "",
+    eventState: "IDLE",
+    eventTeamScores: []
+}
 
 export const localEvents: Writable<ShootEvent[]> = localStorageStore('localEvents', localShootEvents);
 export const thisEvent: Writable<ShootEvent> = localStorageStore('thisEvent', localShootEvent);
+export const thisdbShootEvent: Writable<prismaShootEvent> = localStorageStore('thisdbShootEvent', localprismaShootEvent)
+export const mydbShootEvents: Writable<prismaShootEvent[]> = localStorageStore('mydbShootEvents', [localprismaShootEvent, localprismaShootEvent])
+export const thisdbses = derived(mydbShootEvents, ($a) => $a[0])
 
 export function local_addShootEvent(se: ShootEvent) {
     let success: boolean = false;

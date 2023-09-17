@@ -1,6 +1,5 @@
-import type { Actions, PageServerLoad } from "./$types";
-import { prisma } from "$lib/server/prisma";
-import { fail } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
+import prisma from "$lib/server/prisma";
 
 export const load: PageServerLoad = async () => {
     return {
@@ -9,24 +8,3 @@ export const load: PageServerLoad = async () => {
         dbTeamScores: await prisma.teamScore.findMany()
     }
 };
-
-export const actions: Actions = {
-    addShootEvent: async ({ request }) => {
-        const { eventName, eventState } = Object.fromEntries(await request.formData()) as {
-            eventName: string
-            eventState: string
-        }
-
-        try {
-            await prisma.shootEvent.create({
-                data: {
-                    eventName,
-                    eventState
-                }
-            })
-        } catch (err) {
-            console.log(err)
-            return fail(500, { message: 'Could not add shootEvent' })
-        }
-    }
-}
