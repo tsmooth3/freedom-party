@@ -7,20 +7,47 @@ export const GET: RequestHandler = async ({ url }) => {
     let eventId: number | undefined = Number(url.searchParams.get('eventId'))
     let teamId: number | undefined = Number(url.searchParams.get('teamId'))
     let roundIndex: number | undefined = Number(url.searchParams.get('roundIndex'))
+    let incomplete: number | undefined = Number(url.searchParams.get('incomplete'))
 
     if (eventId) {
-        if (teamId && roundIndex) {
+
+        if (incomplete) {
+            try {
+                const inCompleteRounds = await prisma.eventRound.findMany({
+                    where: {
+                        eventId: {
+                            equals: eventId
+                        },
+                        roundState: {
+                            not: "COMPLETE"
+                        }
+                    },
+                    orderBy: [
+                        {
+                            roundIndex: 'asc'
+                        },
+                        {
+                            teamId: 'asc'
+                        }
+                    ]
+                })
+                if (inCompleteRounds.length > 0) return json(inCompleteRounds)
+                return json([])
+            } catch (error) {
+                return json({ success: false, message: error })
+            }
+        } else if (teamId && roundIndex) {
             try {
                 const eventRounds = await prisma.eventRound.findFirstOrThrow({
                     where: {
                         eventId: {
-                            equals: Number(url.searchParams.get('eventId'))
+                            equals: eventId
                         },
                         teamId: {
-                            equals: Number(url.searchParams.get('teamId'))
+                            equals: teamId
                         },
                         roundIndex: {
-                            equals: Number(url.searchParams.get('roundIndex'))
+                            equals: roundIndex
                         }
                     }
                 })
@@ -28,26 +55,28 @@ export const GET: RequestHandler = async ({ url }) => {
             } catch (error) {
                 return json({ success: false, message: error })
             }
-        }
-        try {
-            const eventRounds = await prisma.eventRound.findMany({
-                where: {
-                    eventId: {
-                        equals: Number(url.searchParams.get('eventId'))
-                    }
-                },
-                orderBy: [
-                    {
-                        teamId: 'asc'
+        } else {
+
+            try {
+                const eventRounds = await prisma.eventRound.findMany({
+                    where: {
+                        eventId: {
+                            equals: eventId
+                        }
                     },
-                    {
-                        roundIndex: 'asc'
-                    }
-                ]
-            })
-            return json(eventRounds)
-        } catch (error) {
-            return json({ success: false, message: error })
+                    orderBy: [
+                        {
+                            teamId: 'asc'
+                        },
+                        {
+                            roundIndex: 'asc'
+                        }
+                    ]
+                })
+                return json(eventRounds)
+            } catch (error) {
+                return json({ success: false, message: error })
+            }
         }
     } else {
         try {

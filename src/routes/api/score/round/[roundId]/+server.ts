@@ -2,10 +2,10 @@ import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ params, url }) => {
 
-    if (url.searchParams.get('teamScoreId') && url.searchParams.get('roundAmmo') && url.searchParams.get('roundClays')) {
-        const teamScoreId = Number(url.searchParams.get('teamScoreId'))
+    if (url.searchParams.get('roundAmmo') && url.searchParams.get('roundClays')) {
+        const teamScoreId = Number(params.roundId)
         const roundAmmo = String(url.searchParams.get('roundAmmo'))
         const roundClays = String(url.searchParams.get('roundClays'))
         try {
