@@ -8,39 +8,102 @@
 	import type { EventState } from '$lib/shared/utils';
 	let screenSize: number;
 	export let data: PageData;
-	let teamLen = data.dbShootEvents[0].eventTeamScores.length;
-	let roundLen = data.dbShootEvents[0].eventTeamScores[0].teamScores.length;
+	let roundLen = data.dbEventRounds.length;
 	let teamState: EventState = 'IDLE';
+	let shootingIndex: number = 0;
 
-	let shooting = data.dbShootEvents[0].eventTeamScores.findIndex((p) => p.teamState === 'ACTIVE');
-	let onDeck = data.dbShootEvents[0].eventTeamScores.findIndex((p) => p.teamState === 'ONDECK');
-	if (shooting < 0 && onDeck < 0) {
-		shooting = 0;
-		onDeck = 1;
-	}
-	if (shooting < 0 && onDeck >= 0) {
-		shooting = onDeck;
-		if (shooting + 1 === teamLen) {
-			onDeck = 0;
+	$: eventComplete = false;
+	$: if (data.dbShootEvents[0].eventState === 'COMPLETE') eventComplete = true;
+	$: allRoundsComplete = false;
+	$: onDeckTeamName = 'n/a';
+	$: scoringDisabled = false;
+	$: shootingIndex = data.dbEventRounds.findLastIndex((p) => p.roundState === 'COMPLETE');
+	$: shootingTeamId = data.dbEventRounds[0].teamId;
+	$: shootingTeamTotal = 0;
+	$: shootingTeamShotsFired = 0;
+	$: shootingTeamRoundId = data.dbEventRounds[0].id;
+	$: onDeckTeamId = data.dbEventRounds[1].teamId;
+	$: roundAmmo = data.dbEventRounds[0].roundAmmo;
+	$: roundClays = data.dbEventRounds[0].roundClays;
+	$: totalClays = 0;
+
+	$: if (shootingIndex + 1 === roundLen) {
+		allRoundsComplete = true;
+		onDeckTeamName = 'All Rounds Complete';
+		shootingTeamId = data.dbEventRounds[0].teamId;
+		shootingTeamRoundId = data.dbEventRounds[shootingIndex].id;
+		onDeckTeamId = data.dbEventRounds[1].teamId;
+		scoringDisabled = true;
+	} else {
+		allRoundsComplete = false;
+		let sRound = data.dbEventRounds[shootingIndex + 1];
+		if (shootingIndex + 2 === roundLen) {
+			onDeckTeamName = 'Final Round';
+			onDeckTeamId = -1;
 		} else {
-			onDeck = shooting + 1;
+			let oRound = data.dbEventRounds[shootingIndex + 2];
+			if (oRound !== undefined) {
+				onDeckTeamId = oRound.teamId;
+			}
+			let oTeam = data.dbShootEvents[0].eventTeamScores.find(
+				(x) => x.id === onDeckTeamId
+			)?.teamName;
+			if (oTeam !== undefined) onDeckTeamName = oTeam;
+		}
+		if (sRound !== undefined) {
+			shootingTeamId = sRound.teamId;
+			shootingTeamRoundId = sRound.id;
+			roundAmmo = sRound.roundAmmo;
+			roundClays = sRound.roundClays;
+			shootingTeamShotsFired = data.dbEventRounds
+				.filter(
+					(score) =>
+						score.teamId === shootingTeamId &&
+						(score.roundState === 'COMPLETE' || score.roundState === 'ACTIVE')
+				)
+				.reduce((count, score) => {
+					if (score.roundAmmo) {
+						// Use regular expression to count occurrences of "x"
+						const xCount = (score.roundAmmo.match(/x/g) || []).length;
+						count += xCount;
+					}
+					return count;
+				}, 0);
+			shootingTeamTotal = data.dbEventRounds
+				.filter(
+					(score) =>
+						score.teamId === shootingTeamId &&
+						(score.roundState === 'COMPLETE' || score.roundState === 'ACTIVE')
+				)
+				.reduce((count, score) => {
+					if (score.roundClays) {
+						// Use regular expression to count occurrences of "x"
+						const xCount = (score.roundClays.match(/x/g) || []).length;
+						count += xCount;
+					}
+					return count;
+				}, 0);
+			totalClays = data.dbEventRounds
+				.filter(
+					(score) =>
+						score.teamId === shootingTeamId &&
+						(score.roundState === 'COMPLETE' || score.roundState === 'ACTIVE')
+				)
+				.reduce((count, score) => {
+					if (score.roundClays) {
+						// Use regular expression to count occurrences of "x"
+						const xCount = (score.roundClays || []).length;
+						count += xCount;
+					}
+					return count;
+				}, 0);
+		}
+		if (roundClays.includes('-') && roundAmmo.includes('-')) {
+			scoringDisabled = false;
+		} else {
+			scoringDisabled = true;
 		}
 	}
-
-	$: onDeckTeamName = data.dbShootEvents[0].eventTeamScores[onDeck].teamName;
-	let round = data.dbActiveShootEvents[0].eventTeamScores[0].teamScores.findLastIndex(
-		(p) => p.roundState === 'COMPLETE'
-	);
-	if (round + 1 === roundLen) {
-		teamState = 'COMPLETE';
-	} else {
-		round++;
-	}
-
-	$: scoringEnabled = !(
-		data.dbShootEvents[0].eventTeamScores[shooting].teamScores[round].roundAmmo.includes('-') &&
-		data.dbShootEvents[0].eventTeamScores[shooting].teamScores[round].roundClays.includes('-')
-	);
 </script>
 
 <svelte:window bind:innerWidth={screenSize} />
@@ -52,65 +115,55 @@
 		<form method="POST" action="?/completeRound" use:enhance>
 			<input type="hidden" name="eventId" value={data.dbShootEvents[0].id} />
 			<input type="hidden" name="teamState" value={teamState} />
-			<input
-				type="hidden"
-				name="teamId"
-				value={data.dbShootEvents[0].eventTeamScores[shooting].id}
-			/>
-			<input
-				type="hidden"
-				name="teamId2"
-				value={data.dbShootEvents[0].eventTeamScores[onDeck].id}
-			/>
-			<input
-				type="hidden"
-				name="teamScoreId"
-				value={data.dbShootEvents[0].eventTeamScores[shooting].teamScores[round].id}
-			/>
+			<input type="hidden" name="teamTotal" value={shootingTeamTotal} />
+			<input type="hidden" name="teamShotsFired" value={shootingTeamShotsFired} />
+			<input type="hidden" name="teamId" value={shootingTeamId} />
+			<input type="hidden" name="teamId2" value={onDeckTeamId} />
+			<input type="hidden" name="teamScoreId" value={shootingTeamRoundId} />
 			{#if data.dbShootEvents[0].eventState === 'NEW'}
 				<button
 					formaction="?/startEvent"
 					type="submit"
 					class="btn variant-outline-primary variant-ghost-primary">Start Event</button
 				>
+			{:else if eventComplete}
+				<button disabled={true} class="btn variant-outline-success variant-ghost-primary"
+					>Event Complete</button
+				>
 			{:else}
-				<input
-					type="hidden"
-					name="roundAmmo"
-					value={data.dbShootEvents[0].eventTeamScores[shooting].teamScores[round].roundAmmo}
-				/>
-				<input
-					type="hidden"
-					name="roundClays"
-					value={data.dbShootEvents[0].eventTeamScores[shooting].teamScores[round].roundClays}
-				/>
-				{#if scoringEnabled}
-					<button type="submit" class="btn variant-outline">Complete Round</button>
+				<input type="hidden" name="roundAmmo" value={roundAmmo} />
+				<input type="hidden" name="roundClays" value={roundClays} />
+				{#if scoringDisabled}
+					{#if allRoundsComplete}
+						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
+							>Complete Event</button
+						>
+					{:else}
+						<button type="submit" class="btn variant-outline">Complete Round</button>
+					{/if}
 				{/if}
 				<button formaction="?/undo" type="submit" class="btn variant-outline-tertiary">undo</button>
-				{#if !scoringEnabled}
-					<button
-						disabled={scoringEnabled}
-						formaction="?/shot"
-						type="submit"
-						class="btn variant-filled-warning">shot</button
-					>
-					<button
-						disabled={scoringEnabled}
-						formaction="?/kill"
-						type="submit"
-						class="btn variant-filled-success">kill</button
-					>
-					<button
-						disabled={scoringEnabled}
-						formaction="?/lost"
-						type="submit"
-						class="btn variant-filled-error">lost</button
-					>
+				{#if !scoringDisabled}
+					<button formaction="?/shot" type="submit" class="btn variant-filled-warning">shot</button>
+					<button formaction="?/kill" type="submit" class="btn variant-filled-success">kill</button>
+					<button formaction="?/lost" type="submit" class="btn variant-filled-error">lost</button>
 				{/if}
 			{/if}
 		</form>
 	</div>
+	<!-- <pre>
+		EventId: {data.dbShootEvents[0].id}
+		ShootingTeamId: {shootingTeamId}
+		ShootingTeamRoundId: {shootingTeamRoundId}
+		onDeckTeamId: {onDeckTeamId}
+		roundClays: {roundClays} - {roundClays.includes('-')}
+		roundAmmo: {roundAmmo} - {roundAmmo.includes('-')}
+		scoringDisabled: {scoringDisabled}
+		allRoundsComplete: {allRoundsComplete}
+		shootingTeamTotal: {shootingTeamTotal}
+		shootingTeamShotsFired: {shootingTeamShotsFired}
+		totalClays: {totalClays}
+	</pre> -->
 	<div class="flex my-auto min-w-[390px]">
 		<Accordion>
 			{#each data.dbActiveShootEvents as se}
@@ -128,9 +181,9 @@
 					<svelte:fragment slot="content">
 						{#each se.eventTeamScores as ets}
 							{#if screenSize > 1368}
-								<TeamData teamData={ets} orientation="horizontal" />
+								<TeamData teamData={ets} {totalClays} orientation="horizontal" />
 							{:else}
-								<TeamData teamData={ets} orientation="vertical" />
+								<TeamData teamData={ets} {totalClays} orientation="vertical" />
 							{/if}
 						{/each}
 					</svelte:fragment>
@@ -138,7 +191,9 @@
 			{/each}
 		</Accordion>
 	</div>
-
+	<!-- <pre>
+		{JSON.stringify(data.dbActiveShootEvents[0].eventTeamScores[0], null, 2)}
+	</pre> -->
 	<div class="flex my-auto min-w-[390px]">
 		<img class="flex-1 mx-auto min-w-[390px] max-w-[690px]" src={doglaugh} alt="duck hunt dog" />
 	</div>
