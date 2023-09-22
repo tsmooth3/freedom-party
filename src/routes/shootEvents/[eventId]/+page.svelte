@@ -26,6 +26,9 @@
 	$: roundAmmo = data.dbEventRounds[0].roundAmmo;
 	$: roundClays = data.dbEventRounds[0].roundClays;
 	$: totalClays = 0;
+	$: eventWinner = data.dbShootEvents[0].eventTeamScores[0];
+	$: winnerClayAccuracy = 0;
+	$: winnerAmmoAccuracy = 0;
 
 	$: if (shootingIndex + 1 === roundLen) {
 		allRoundsComplete = true;
@@ -33,6 +36,24 @@
 		shootingTeamId = data.dbEventRounds[0].teamId;
 		shootingTeamRoundId = data.dbEventRounds[shootingIndex].id;
 		onDeckTeamId = data.dbEventRounds[1].teamId;
+		totalClays = data.dbEventRounds
+			.filter(
+				(score) =>
+					score.teamId === shootingTeamId &&
+					(score.roundState === 'COMPLETE' || score.roundState === 'ACTIVE')
+			)
+			.reduce((count, score) => {
+				if (score.roundClays) {
+					// Use regular expression to count occurrences of "x"
+					const xCount = (score.roundClays || []).length;
+					count += xCount;
+				}
+				return count;
+			}, 0);
+		if (eventWinner.teamTotal !== null && eventWinner.teamShotsFired !== null) {
+			winnerClayAccuracy = Math.round((eventWinner.teamTotal / totalClays) * 100);
+			winnerAmmoAccuracy = Math.round((eventWinner.teamTotal / eventWinner.teamShotsFired) * 100);
+		}
 		scoringDisabled = true;
 	} else {
 		allRoundsComplete = false;
@@ -164,31 +185,84 @@
 		shootingTeamShotsFired: {shootingTeamShotsFired}
 		totalClays: {totalClays}
 	</pre> -->
+	{#if eventComplete}
+		<div class="flex my-auto min-w-[390px]">
+			<div class="card m-4 p-3 flex-auto variant-ghost-success text-center">
+				<h1 class="h1">Event Winner!</h1>
+				<h1 class="h1">{eventWinner.teamName}</h1>
+				<h2>
+					{eventWinner.teamShooter1}
+					| {eventWinner.teamShooter2}
+				</h2>
+				<h2>
+					{eventWinner.teamTotal} / {totalClays} Clays Broken |
+					{winnerClayAccuracy}% Accuracy
+				</h2>
+				<h2>
+					{eventWinner.teamShotsFired} Shots Fired | {winnerAmmoAccuracy}% Accuracy
+				</h2>
+			</div>
+		</div>
+	{/if}
 	<div class="flex my-auto min-w-[390px]">
 		<Accordion>
-			{#each data.dbActiveShootEvents as se}
-				<AccordionItem open>
-					<svelte:fragment slot="lead"><img class="h-8" src={cap} alt="cap" /></svelte:fragment>
-					<svelte:fragment slot="summary">
-						{#if se.eventState === 'NEW'}
-							Press Start Event to get started
-						{:else}
-							<div class="h3">
-								On Deck: {onDeckTeamName}
-							</div>
-						{/if}
-					</svelte:fragment>
-					<svelte:fragment slot="content">
-						{#each se.eventTeamScores as ets}
-							{#if screenSize > 1368}
-								<TeamData teamData={ets} {totalClays} orientation="horizontal" />
+			{#if eventComplete}
+				{#each data.dbShootEvents as se}
+					<AccordionItem>
+						<svelte:fragment slot="lead"><img class="h-8" src={cap} alt="cap" /></svelte:fragment>
+						<svelte:fragment slot="summary">
+							{#if se.eventState === 'NEW'}
+								Press Start Event to get started
+							{:else if allRoundsComplete || onDeckTeamId == -1}
+								<div class="h3">
+									{onDeckTeamName}
+								</div>
 							{:else}
-								<TeamData teamData={ets} {totalClays} orientation="vertical" />
+								<div class="h3">
+									On Deck: {onDeckTeamName}
+								</div>
 							{/if}
-						{/each}
-					</svelte:fragment>
-				</AccordionItem>
-			{/each}
+						</svelte:fragment>
+						<svelte:fragment slot="content">
+							{#each se.eventTeamScores as ets}
+								{#if screenSize > 1368}
+									<TeamData teamData={ets} {totalClays} orientation="horizontal" />
+								{:else}
+									<TeamData teamData={ets} {totalClays} orientation="vertical" />
+								{/if}
+							{/each}
+						</svelte:fragment>
+					</AccordionItem>
+				{/each}
+			{:else}
+				{#each data.dbActiveShootEvents as se}
+					<AccordionItem open>
+						<svelte:fragment slot="lead"><img class="h-8" src={cap} alt="cap" /></svelte:fragment>
+						<svelte:fragment slot="summary">
+							{#if se.eventState === 'NEW'}
+								Press Start Event to get started
+							{:else if allRoundsComplete || onDeckTeamId == -1}
+								<div class="h3">
+									{onDeckTeamName}
+								</div>
+							{:else}
+								<div class="h3">
+									On Deck: {onDeckTeamName}
+								</div>
+							{/if}
+						</svelte:fragment>
+						<svelte:fragment slot="content">
+							{#each se.eventTeamScores as ets}
+								{#if screenSize > 1368}
+									<TeamData teamData={ets} {totalClays} orientation="horizontal" />
+								{:else}
+									<TeamData teamData={ets} {totalClays} orientation="vertical" />
+								{/if}
+							{/each}
+						</svelte:fragment>
+					</AccordionItem>
+				{/each}
+			{/if}
 		</Accordion>
 	</div>
 	<!-- <pre>
