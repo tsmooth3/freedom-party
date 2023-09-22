@@ -5,7 +5,7 @@ import { invalidateAll } from "$app/navigation";
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
     const id = params.eventId
-    const dbShootEventResponse = await fetch('/api/shootEvents?eventId=' + id)
+    const dbShootEventResponse = await fetch('/api/shootEvents/byLeader/' + id)
     const dbShootEvents: prismaShootEvent[] = await dbShootEventResponse.json()
     const dbActiveShootEventResponse = await fetch('/api/shootEvents?eventId=' + id + '&active=true')
     const dbActiveShootEvents: prismaShootEvent[] = await dbActiveShootEventResponse.json()

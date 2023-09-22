@@ -1,13 +1,12 @@
 <script lang="ts">
 	import TeamData from '$lib/components/TeamData.svelte';
-	import { mydbShootEvents } from '$lib/client/localStoragedb';
 	import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
 	import cap from '$lib/images/capshield.svg';
 	import doglaugh from '$lib/images/doglaugh.gif';
 	import type { PageData } from './$types';
+	import { enhance } from '$app/forms';
 	let screenSize: number;
 	export let data: PageData;
-	$mydbShootEvents = data.dbShootEvents;
 </script>
 
 <svelte:window bind:innerWidth={screenSize} />
@@ -19,24 +18,41 @@
 	</div>
 	<div class="flex my-auto min-w-[390px]">
 		<Accordion>
-			{#each $mydbShootEvents as se}
+			{#each data.dbShootEvents as se}
 				<AccordionItem>
 					<svelte:fragment slot="lead"
 						><a href="/shootEvents/{se.id}"><img class="h-8" src={cap} alt="cap" /></a
 						></svelte:fragment
 					>
-					<svelte:fragment slot="summary"
-						>{se.eventName} : {se.id} : {se.eventState}</svelte:fragment
-					>
+					<svelte:fragment slot="summary">
+						{se.eventName}-{se.eventState}
+					</svelte:fragment>
 					<svelte:fragment slot="content">
+						<form method="POST" action="?/deleteEvent" use:enhance>
+							<input type="hidden" name="eventId" value={se.id} />
+							<button class="btn variant-outline-success variant-ghost-warning">Delete Event</button
+							>
+						</form>
 						{#each se.eventTeamScores as ets}
 							{#if screenSize > 1368}
 								<a href="/shootEvents/{se.id}">
-									<TeamData teamData={ets} orientation="horizontal" />
+									<TeamData
+										teamData={ets}
+										totalClays={se.eventTeamScores[0].teamScores.reduce((count, score) => {
+											return (count += (score.roundClays || []).length);
+										}, 0)}
+										orientation="horizontal"
+									/>
 								</a>
 							{:else}
 								<a href="/shootEvents/{se.id}">
-									<TeamData teamData={ets} orientation="vertical" />
+									<TeamData
+										teamData={ets}
+										totalClays={se.eventTeamScores[0].teamScores.reduce((count, score) => {
+											return (count += (score.roundClays || []).length);
+										}, 0)}
+										orientation="vertical"
+									/>
 								</a>
 							{/if}
 						{/each}
