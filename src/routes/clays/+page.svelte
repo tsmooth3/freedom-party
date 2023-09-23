@@ -28,11 +28,11 @@
 						{se.eventName}-{se.eventState}
 					</svelte:fragment>
 					<svelte:fragment slot="content">
-						<form method="POST" action="?/deleteEvent" use:enhance>
+						<!-- <form method="POST" action="?/deleteEvent" use:enhance>
 							<input type="hidden" name="eventId" value={se.id} />
 							<button class="btn variant-outline-success variant-ghost-warning">Delete Event</button
 							>
-						</form>
+						</form> -->
 						{#each se.eventTeamScores as ets}
 							{#if screenSize > 1368}
 								<a href="/shootEvents/{se.id}">
