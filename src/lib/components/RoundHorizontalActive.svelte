@@ -9,7 +9,7 @@
 	export let ammos: string;
 </script>
 
-<div class="flex-1 card mx-auto p-3 variant-ghost-success">
+<div class="flex-1 card mx-auto p-3 variant-ghost-primary">
 	<h1>{roundName}</h1>
 	<div class="flex justify-center my-3">
 		{#each clays.split('') as c}

@@ -16,7 +16,7 @@
 
 <div class="flex m-3 gap-3">
 	{#if teamData.teamState === 'ACTIVE'}
-		<div class="flex-1 card card-hover p-4 text-center place-content-center variant-ghost-success">
+		<div class="flex-1 card card-hover p-4 text-center variant-ghost-success">
 			<h2>{teamData.teamName}</h2>
 			<p>{teamData.teamShooter1} | {teamData.teamShooter2}</p>
 		</div>

@@ -12,6 +12,17 @@
 	let teamState: EventState = 'IDLE';
 	let shootingIndex: number = 0;
 
+	let eventName: String = data.dbShootEvents[0].eventName;
+	const options: Intl.DateTimeFormatOptions = {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		timeZone: 'America/New_York'
+	};
+	let eventDate: Date = data.dbShootEvents[0].createdAt;
+	const inputDate = new Date(eventDate);
+	const formatter = new Intl.DateTimeFormat('en-US', options);
+	const formattedDate = formatter.format(inputDate);
 	$: eventComplete = false;
 	$: if (data.dbShootEvents[0].eventState === 'COMPLETE') eventComplete = true;
 	$: allRoundsComplete = false;
@@ -132,7 +143,7 @@
 {#await data}
 	<p>Loading ...</p>
 {:then data}
-	<div class="flex my-auto p-4 min-w-[390px] justify-end">
+	<div class="flex p-1 min-w-[390px] justify-end">
 		<form method="POST" action="?/completeRound" use:enhance>
 			<input type="hidden" name="eventId" value={data.dbShootEvents[0].id} />
 			<input type="hidden" name="teamState" value={teamState} />
@@ -172,9 +183,9 @@
 			{/if}
 		</form>
 	</div>
-	<!-- <pre>
-		EventId: {data.dbShootEvents[0].id}
-		ShootingTeamId: {shootingTeamId}
+	<!-- <pre> -->
+	<!-- {data.dbShootEvents[0].eventName} -->
+	<!-- ShootingTeamId: {shootingTeamId}
 		ShootingTeamRoundId: {shootingTeamRoundId}
 		onDeckTeamId: {onDeckTeamId}
 		roundClays: {roundClays} - {roundClays.includes('-')}
@@ -183,11 +194,13 @@
 		allRoundsComplete: {allRoundsComplete}
 		shootingTeamTotal: {shootingTeamTotal}
 		shootingTeamShotsFired: {shootingTeamShotsFired}
-		totalClays: {totalClays}
-	</pre> -->
+		totalClays: {totalClays} -->
+	<!-- </pre> -->
 	{#if eventComplete}
 		<div class="flex my-auto min-w-[390px]">
-			<div class="card m-4 p-3 flex-auto variant-ghost-success text-center">
+			<div class="card m-3 p-3 flex-auto variant-ghost-success text-center">
+				<h1 class="h1">{eventName}</h1>
+				<h3 class="h3">{formattedDate}</h3>
 				<h1 class="h1">Event Winner!</h1>
 				<h1 class="h1">{eventWinner.teamName}</h1>
 				<h2>
@@ -201,6 +214,13 @@
 				<h2>
 					{eventWinner.teamShotsFired} Shots Fired | {winnerAmmoAccuracy}% Accuracy
 				</h2>
+			</div>
+		</div>
+	{:else}
+		<div class="flex my-auto min-w-[390px]">
+			<div class="card m-3 p-3 flex-auto variant-ringed-secondary text-center">
+				<h1 class="h1">{eventName}</h1>
+				<h3 class="h3">{formattedDate}</h3>
 			</div>
 		</div>
 	{/if}

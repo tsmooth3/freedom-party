@@ -34,7 +34,7 @@
 			</h5>
 		</div>
 	{:else}
-		<div class="flex-1 card card-hover p-2 text-justify variant-ghost">
+		<div class="flex-1 card card-hover p-2 text-justify variant-ringed-secondary">
 			<h3 class="h3">{teamData.teamName}</h3>
 			<h5 class="h5">{teamData.teamShooter1} | {teamData.teamShooter2}</h5>
 			<h5 class="h5">
@@ -53,7 +53,7 @@
 			</h5>
 		</div>
 	{/if}
-	<div class="flex-1 card card-hover my-auto p-2 variant-ghost-error">
+	<div class="flex-1 card card-hover my-auto p-2 variant-ringed-error variant-glass-error">
 		{#each teamData.teamScores as round}
 			<RoundVertical
 				roundName={round.roundName}
