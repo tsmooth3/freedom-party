@@ -176,9 +176,15 @@
 				{/if}
 				<button formaction="?/undo" type="submit" class="btn variant-outline-tertiary">undo</button>
 				{#if !scoringDisabled}
-					<button formaction="?/shot" type="submit" class="btn variant-filled-warning">shot</button>
-					<button formaction="?/kill" type="submit" class="btn variant-filled-success">kill</button>
-					<button formaction="?/lost" type="submit" class="btn variant-filled-error">lost</button>
+					<button formaction="?/shot" type="submit" class="btn variant-filled-warning"
+						>shot miss</button
+					>
+					<button formaction="?/kill" type="submit" class="btn variant-filled-success"
+						>shot hit</button
+					>
+					<button formaction="?/lost" type="submit" class="btn variant-filled-error"
+						>clay unbroken</button
+					>
 				{/if}
 			{/if}
 		</form>

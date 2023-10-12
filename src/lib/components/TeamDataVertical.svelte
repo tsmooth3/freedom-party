@@ -53,7 +53,7 @@
 			</h5>
 		</div>
 	{/if}
-	<div class="flex-1 card card-hover my-auto p-2 variant-ringed-error variant-glass-error">
+	<div class="flex-1 card my-auto p-2 variant-ringed-error variant-glass-error">
 		{#each teamData.teamScores as round}
 			<RoundVertical
 				roundName={round.roundName}
