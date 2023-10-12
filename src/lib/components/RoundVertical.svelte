@@ -38,10 +38,10 @@
 		{/each}
 	</div>
 {:else if roundState === 'COMPLETE'}
-	<h1 class=" my-0 mx-1 bg-secondary-50-900-token">
+	<h1 class=" mx-1 bg-secondary-50-900-token">
 		{roundName} - COMPLETE
 	</h1>
-	<div class="flex my-0 mx-1 bg-secondary-50-900-token">
+	<div class="flex mx-1 bg-secondary-50-900-token">
 		{#each clays.split('') as c}
 			{#if c === '-'}
 				<img class="w-6 md:w-8 lg:w-10" src={clay} alt="clay" />
@@ -52,7 +52,7 @@
 			{/if}
 		{/each}
 	</div>
-	<div class="flex my-0 mx-1 bg-secondary-50-900-token">
+	<div class="flex mx-1 bg-secondary-50-900-token">
 		{#each ammos.split('') as a}
 			{#if a === '-'}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shell} alt="shell" />
