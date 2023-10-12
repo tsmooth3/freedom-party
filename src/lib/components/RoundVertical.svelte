@@ -1,13 +1,14 @@
 <script lang="ts">
 	import shell from '$lib/images/shell.svg';
 	import shellshot from '$lib/images/shellshot.svg';
+	import shellhit from '$lib/images/shell_shot.svg';
 	import clay from '$lib/images/capshield.svg';
 	import clayhit from '$lib/images/capshield_broken.svg';
 	import claymiss from '$lib/images/capshield_miss.svg';
-	export let roundName: string;
-	export let clays: string;
-	export let ammos: string;
-	export let roundState: string;
+	export let roundName: String;
+	export let clays: String;
+	export let ammos: String;
+	export let roundState: String;
 </script>
 
 {#if roundState === 'ACTIVE'}
@@ -29,6 +30,8 @@
 		{#each ammos.split('') as a}
 			{#if a === '-'}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shell} alt="shell" />
+			{:else if a === 'x'}
+				<img class="m-1 h-6 md:h-8 lg:h-10" src={shellhit} alt="shellhit" />
 			{:else}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shellshot} alt="shellshot" />
 			{/if}
@@ -53,6 +56,8 @@
 		{#each ammos.split('') as a}
 			{#if a === '-'}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shell} alt="shell" />
+			{:else if a === 'x'}
+				<img class="m-1 h-6 md:h-8 lg:h-10" src={shellhit} alt="shellhit" />
 			{:else}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shellshot} alt="shellshot" />
 			{/if}
@@ -75,6 +80,8 @@
 		{#each ammos.split('') as a}
 			{#if a === '-'}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shell} alt="shell" />
+			{:else if a === 'x'}
+				<img class="m-1 h-6 md:h-8 lg:h-10" src={shellhit} alt="shellhit" />
 			{:else}
 				<img class="m-1 h-6 md:h-8 lg:h-10" src={shellshot} alt="shellshot" />
 			{/if}

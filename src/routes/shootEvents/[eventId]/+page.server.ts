@@ -93,6 +93,15 @@ export const actions: Actions = {
         const eventId = Number(formData.get('eventId'))
         const teamId = Number(formData.get('teamId'))
         const teamId2 = Number(formData.get('teamId2'))
+
+        //score round
+        let teamTotal = Number(formData.get('teamTotal'))
+        let teamShotsFired = Number(formData.get('teamShotsFired'))
+        let ammo = String(formData.get('roundAmmo'))
+        let clays = String(formData.get('roundClays'))
+        await fetch('/api/score/round/' + teamScoreId + '?roundAmmo=' + ammo + '&roundClays=' + clays)
+        await fetch('/api/score/team/' + teamId + '?teamTotal=' + teamTotal + '&teamShotsFired=' + teamShotsFired)
+
         // set round to complete
         await fetch('/api/complete/' + eventId + '/round/' + teamScoreId)
         if (teamId2 !== -1) {
