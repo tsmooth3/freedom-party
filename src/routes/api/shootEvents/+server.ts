@@ -22,9 +22,10 @@ export const GET: RequestHandler = async ({ url }) => {
                         },
                         include: {
                             teamScores: {
-                                orderBy: {
-                                    roundIndex: 'asc'
-                                }
+                                orderBy: [
+                                    { roundState: 'asc' },
+                                    { roundIndex: 'asc' }
+                                ]
                             }
                         }
                     }

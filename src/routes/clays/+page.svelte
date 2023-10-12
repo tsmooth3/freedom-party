@@ -25,7 +25,9 @@
 						></svelte:fragment
 					>
 					<svelte:fragment slot="summary">
-						{se.eventName}-{se.eventState}
+						{new Date(se.createdAt).toDateString()} :
+						{se.eventName} :
+						{se.eventState}
 					</svelte:fragment>
 					<svelte:fragment slot="content">
 						<!-- <form method="POST" action="?/deleteEvent" use:enhance>
