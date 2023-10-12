@@ -1,11 +1,17 @@
 <script lang="ts">
 	import TeamData from '$lib/components/TeamData.svelte';
+	import { myAmmo, myClays, myTeamShotsFired, myTeamTotal } from '$lib/client/localStoragedb';
 	import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
 	import cap from '$lib/images/capshield.svg';
+	import clayhit from '$lib/images/capshield_broken.svg';
+	import claymiss from '$lib/images/capshield_miss.svg';
+	import shellhit from '$lib/images/shell_shot.svg';
+	import shellmiss from '$lib/images/shellshot.svg';
 	import doglaugh from '$lib/images/doglaugh.gif';
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import type { EventState } from '$lib/shared/utils';
+	import RoundVertical from '$lib/components/RoundVertical.svelte';
 	let screenSize: number;
 	export let data: PageData;
 	let roundLen = data.dbEventRounds.length;
@@ -30,9 +36,11 @@
 	$: scoringDisabled = false;
 	$: shootingIndex = data.dbEventRounds.findLastIndex((p) => p.roundState === 'COMPLETE');
 	$: shootingTeamId = data.dbEventRounds[0].teamId;
+	$: shootingTeamName = data.dbShootEvents[0].eventTeamScores[0].teamName;
 	$: shootingTeamTotal = 0;
 	$: shootingTeamShotsFired = 0;
 	$: shootingTeamRoundId = data.dbEventRounds[0].id;
+	$: shootingTeamRoundName = data.dbEventRounds[0].roundName;
 	$: onDeckTeamId = data.dbEventRounds[1].teamId;
 	$: roundAmmo = data.dbEventRounds[0].roundAmmo;
 	$: roundClays = data.dbEventRounds[0].roundClays;
@@ -46,6 +54,7 @@
 		onDeckTeamName = 'All Rounds Complete';
 		shootingTeamId = data.dbEventRounds[0].teamId;
 		shootingTeamRoundId = data.dbEventRounds[shootingIndex].id;
+		shootingTeamRoundName = data.dbEventRounds[shootingIndex].roundName;
 		onDeckTeamId = data.dbEventRounds[1].teamId;
 		totalClays = data.dbEventRounds
 			.filter(
@@ -84,9 +93,15 @@
 		}
 		if (sRound !== undefined) {
 			shootingTeamId = sRound.teamId;
+			let sTeam = data.dbShootEvents[0].eventTeamScores.find((x) => x.id === shootingTeamId);
+			if (sTeam !== undefined)
+				shootingTeamName = sTeam.teamName + ' | ' + sTeam.teamShooter1 + ' - ' + sTeam.teamShooter2;
 			shootingTeamRoundId = sRound.id;
+			shootingTeamRoundName = sRound.roundName;
 			roundAmmo = sRound.roundAmmo;
 			roundClays = sRound.roundClays;
+			$myAmmo = sRound.roundAmmo;
+			$myClays = sRound.roundClays;
 			shootingTeamShotsFired = data.dbEventRounds
 				.filter(
 					(score) =>
@@ -96,11 +111,12 @@
 				.reduce((count, score) => {
 					if (score.roundAmmo) {
 						// Use regular expression to count occurrences of "x"
-						const xCount = (score.roundAmmo.match(/x/g) || []).length;
+						const xCount = (score.roundAmmo.match(/[xo]/g) || []).length;
 						count += xCount;
 					}
 					return count;
 				}, 0);
+			$myTeamShotsFired = shootingTeamShotsFired;
 			shootingTeamTotal = data.dbEventRounds
 				.filter(
 					(score) =>
@@ -115,6 +131,7 @@
 					}
 					return count;
 				}, 0);
+			$myTeamTotal = shootingTeamTotal;
 			totalClays = data.dbEventRounds
 				.filter(
 					(score) =>
@@ -130,11 +147,43 @@
 					return count;
 				}, 0);
 		}
-		if (roundClays.includes('-') && roundAmmo.includes('-')) {
-			scoringDisabled = false;
-		} else {
-			scoringDisabled = true;
+	}
+
+	$: if ($myAmmo.includes('-') && $myClays.includes('-')) {
+		scoringDisabled = false;
+	} else {
+		scoringDisabled = true;
+	}
+
+	function kill() {
+		if ($myAmmo.includes('-') && $myClays.includes('-')) {
+			$myAmmo = $myAmmo.replace('-', 'x');
+			$myTeamShotsFired++;
+			$myClays = $myClays.replace('-', 'x');
+			$myTeamTotal++;
 		}
+		if (!$myAmmo.includes('-')) {
+			$myClays = $myClays.replaceAll('-', 'o');
+		}
+	}
+	function shot() {
+		if ($myAmmo.includes('-')) {
+			$myAmmo = $myAmmo.replace('-', 'o');
+			$myTeamShotsFired++;
+		}
+		if (!$myAmmo.includes('-')) {
+			$myClays = $myClays.replaceAll('-', 'o');
+		}
+	}
+	function lost() {
+		$myClays = $myClays.replace('-', 'o');
+	}
+
+	function undo() {
+		$myAmmo = $myAmmo.replaceAll('x', '-').replaceAll('o', '-');
+		$myClays = $myClays.replaceAll('x', '-').replaceAll('o', '-');
+		$myTeamShotsFired = shootingTeamShotsFired;
+		$myTeamTotal = shootingTeamTotal;
 	}
 </script>
 
@@ -147,8 +196,8 @@
 		<form method="POST" action="?/completeRound" use:enhance>
 			<input type="hidden" name="eventId" value={data.dbShootEvents[0].id} />
 			<input type="hidden" name="teamState" value={teamState} />
-			<input type="hidden" name="teamTotal" value={shootingTeamTotal} />
-			<input type="hidden" name="teamShotsFired" value={shootingTeamShotsFired} />
+			<input type="hidden" name="teamTotal" bind:value={$myTeamTotal} />
+			<input type="hidden" name="teamShotsFired" bind:value={$myTeamShotsFired} />
 			<input type="hidden" name="teamId" value={shootingTeamId} />
 			<input type="hidden" name="teamId2" value={onDeckTeamId} />
 			<input type="hidden" name="teamScoreId" value={shootingTeamRoundId} />
@@ -163,8 +212,8 @@
 					>Event Complete</button
 				>
 			{:else}
-				<input type="hidden" name="roundAmmo" value={roundAmmo} />
-				<input type="hidden" name="roundClays" value={roundClays} />
+				<input type="hidden" name="roundAmmo" bind:value={$myAmmo} />
+				<input type="hidden" name="roundClays" bind:value={$myClays} />
 				{#if scoringDisabled}
 					{#if allRoundsComplete}
 						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
@@ -175,33 +224,26 @@
 					{/if}
 				{/if}
 				<button formaction="?/undo" type="submit" class="btn variant-outline-tertiary">undo</button>
-				{#if !scoringDisabled}
-					<button formaction="?/shot" type="submit" class="btn variant-filled-warning"
-						>shot miss</button
-					>
-					<button formaction="?/kill" type="submit" class="btn variant-filled-success"
-						>shot hit</button
-					>
-					<button formaction="?/lost" type="submit" class="btn variant-filled-error"
-						>clay unbroken</button
-					>
-				{/if}
 			{/if}
 		</form>
 	</div>
-	<!-- <pre> -->
-	<!-- {data.dbShootEvents[0].eventName} -->
-	<!-- ShootingTeamId: {shootingTeamId}
+	<!-- <pre>
+		{data.dbShootEvents[0].eventName}
+		ShootingTeamId: {shootingTeamId}
 		ShootingTeamRoundId: {shootingTeamRoundId}
 		onDeckTeamId: {onDeckTeamId}
-		roundClays: {roundClays} - {roundClays.includes('-')}
-		roundAmmo: {roundAmmo} - {roundAmmo.includes('-')}
-		scoringDisabled: {scoringDisabled}
-		allRoundsComplete: {allRoundsComplete}
+		roundClays: {roundClays} : {roundClays.includes('-')}
+		roundAmmo: {roundAmmo} : {roundAmmo.includes('-')}
 		shootingTeamTotal: {shootingTeamTotal}
 		shootingTeamShotsFired: {shootingTeamShotsFired}
-		totalClays: {totalClays} -->
-	<!-- </pre> -->
+		myClays: {$myClays} : {$myClays.includes('-')}
+		myAmmo: {$myAmmo} : {$myAmmo.includes('-')}
+		myTeamTotal: {$myTeamTotal}
+		myTeamShotsFired: {$myTeamShotsFired}
+		scoringDisabled: {scoringDisabled}
+		allRoundsComplete: {allRoundsComplete}
+		totalClays: {totalClays}
+	</pre> -->
 	{#if eventComplete}
 		<div class="flex my-auto min-w-[390px]">
 			<div class="card m-3 p-3 flex-auto variant-ghost-success text-center">
@@ -230,6 +272,45 @@
 			</div>
 		</div>
 	{/if}
+	{#if allRoundsComplete == false && data.dbShootEvents[0].eventState !== 'NEW'}
+		<div class="flex my-auto min-w-[390px]">
+			<div
+				class="card m-3 p-3 flex-auto text-center variant-ringed-primary variant-glass-secondary"
+			>
+				<div class="h2">
+					{shootingTeamName}
+				</div>
+				<div>
+					Team Score: {$myTeamTotal}
+				</div>
+				<div>
+					Shots Fired: {$myTeamShotsFired}
+				</div>
+				<RoundVertical
+					roundName={shootingTeamRoundName}
+					roundState=""
+					ammos={$myAmmo}
+					clays={$myClays}
+				/>
+				<div class="flex">
+					<button type="button" class="flex mx-1 btn variant-ghost-warning" on:click={shot}
+						>shot miss <img class="m-1 h-6 md:h-8 lg:h-10" src={shellmiss} alt="shell" /></button
+					>
+					<button type="button" class="flex mx-1 btn variant-ghost-success" on:click={kill}
+						>shot <img class="m-1 h-6 md:h-8 lg:h-10" src={shellhit} alt="shell" /> kill
+						<img class="w-6 md:w-8 lg:w-10" src={clayhit} alt="clayhit" /></button
+					>
+					<button type="button" class="flex mx-1 btn variant-ghost-error" on:click={lost}
+						>clay miss <img class="w-6 md:w-8 lg:w-10" src={claymiss} alt="claymiss" /></button
+					>
+					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={undo}
+						>reset</button
+					>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<div class="flex my-auto min-w-[390px]">
 		<Accordion>
 			{#if eventComplete}

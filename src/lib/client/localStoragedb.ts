@@ -27,7 +27,10 @@ export const thisEvent: Writable<ShootEvent> = localStorageStore('thisEvent', lo
 export const thisdbShootEvent: Writable<prismaShootEvent> = localStorageStore('thisdbShootEvent', localprismaShootEvent)
 export const mydbShootEvents: Writable<prismaShootEvent[]> = localStorageStore('mydbShootEvents', [localprismaShootEvent, localprismaShootEvent])
 export const thisdbses = derived(mydbShootEvents, ($a) => $a[0])
-
+export const myAmmo: Writable<String> = localStorageStore('myAmmo', '');
+export const myClays: Writable<String> = localStorageStore('myClays', '');
+export const myTeamShotsFired: Writable<number> = localStorageStore('myTeamShotsFired', 0);
+export const myTeamTotal: Writable<number> = localStorageStore('myTeamTotal', 0);
 export function local_addShootEvent(se: ShootEvent) {
     let success: boolean = false;
     if (!localShootEvents.find((e) => e.eventId === se.eventId)) {
