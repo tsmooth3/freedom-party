@@ -219,9 +219,6 @@
 						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
 							>Complete Event</button
 						>
-						<button formaction="?/undo" type="submit" class="btn variant-outline-tertiary"
-							>undo</button
-						>
 					{:else}
 						<button type="submit" class="btn variant-outline">Complete Round</button>
 					{/if}
@@ -232,12 +229,10 @@
 	<!-- <pre>
 		{data.dbShootEvents[0].eventName}
 		ShootingTeamId: {shootingTeamId}
+		ShootingTeamName: {shootingTeamName}
+		ShootingTeamRoundName: {shootingTeamRoundName}
 		ShootingTeamRoundId: {shootingTeamRoundId}
 		onDeckTeamId: {onDeckTeamId}
-		roundClays: {roundClays} : {roundClays.includes('-')}
-		roundAmmo: {roundAmmo} : {roundAmmo.includes('-')}
-		shootingTeamTotal: {shootingTeamTotal}
-		shootingTeamShotsFired: {shootingTeamShotsFired}
 		myClays: {$myClays} : {$myClays.includes('-')}
 		myAmmo: {$myAmmo} : {$myAmmo.includes('-')}
 		myTeamTotal: {$myTeamTotal}
@@ -353,7 +348,7 @@
 				{/each}
 			{:else}
 				{#each data.dbActiveShootEvents as se}
-					<AccordionItem open>
+					<AccordionItem>
 						<svelte:fragment slot="lead"><img class="h-8" src={cap} alt="cap" /></svelte:fragment>
 						<svelte:fragment slot="summary">
 							{#if se.eventState === 'NEW'}
