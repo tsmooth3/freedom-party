@@ -219,11 +219,13 @@
 						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
 							>Complete Event</button
 						>
+						<button formaction="?/undo" type="submit" class="btn variant-outline-tertiary"
+							>undo</button
+						>
 					{:else}
 						<button type="submit" class="btn variant-outline">Complete Round</button>
 					{/if}
 				{/if}
-				<button formaction="?/undo" type="submit" class="btn variant-outline-tertiary">undo</button>
 			{/if}
 		</form>
 	</div>
@@ -274,38 +276,46 @@
 	{/if}
 	{#if allRoundsComplete == false && data.dbShootEvents[0].eventState !== 'NEW'}
 		<div class="flex my-auto min-w-[390px]">
-			<div
-				class="card m-3 p-3 flex-auto text-center variant-ringed-primary variant-glass-secondary"
-			>
-				<div class="h2">
+			<div class="card m-3 p-3 flex-auto variant-ringed-primary variant-glass-secondary">
+				<div class="h2 mx-2">
 					{shootingTeamName}
 				</div>
-				<div>
+				<div class="mx-2">
 					Team Score: {$myTeamTotal}
 				</div>
-				<div>
-					Shots Fired: {$myTeamShotsFired}
+				<div class="mx-2">
+					Total Shots Fired: {$myTeamShotsFired}
 				</div>
-				<RoundVertical
-					roundName={shootingTeamRoundName}
-					roundState=""
-					ammos={$myAmmo}
-					clays={$myClays}
-				/>
-				<div class="flex">
-					<button type="button" class="flex mx-1 btn variant-ghost-warning" on:click={shot}
-						>shot miss <img class="m-1 h-6 md:h-8 lg:h-10" src={shellmiss} alt="shell" /></button
-					>
-					<button type="button" class="flex mx-1 btn variant-ghost-success" on:click={kill}
-						>shot <img class="m-1 h-6 md:h-8 lg:h-10" src={shellhit} alt="shell" /> kill
-						<img class="w-6 md:w-8 lg:w-10" src={clayhit} alt="clayhit" /></button
-					>
-					<button type="button" class="flex mx-1 btn variant-ghost-error" on:click={lost}
-						>clay miss <img class="w-6 md:w-8 lg:w-10" src={claymiss} alt="claymiss" /></button
-					>
-					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={undo}
-						>reset</button
-					>
+				<div class="my-2 mx-5">
+					<RoundVertical
+						roundName={shootingTeamRoundName}
+						roundState=""
+						ammos={$myAmmo}
+						clays={$myClays}
+					/>
+				</div>
+				<div class="flex-auto">
+					<div class="flex m-1 justify-start">
+						<button type="button" class="m-2 w-full btn variant-ghost-warning" on:click={shot}
+							>shot miss <img class="mx-2 h-6 md:h-8 lg:h-10" src={shellmiss} alt="shell" /></button
+						>
+						<button type="button" class="m-2 w-full btn variant-ghost-success" on:click={kill}
+							>shot <img class="mx-2 h-6 md:h-8 lg:h-10" src={shellhit} alt="shell" /> kill
+							<img class="mx-2 w-6 md:w-8 lg:w-10" src={clayhit} alt="clayhit" /></button
+						>
+					</div>
+					<div class="flex m-1 justify-start">
+						<button type="button" class="m-2 w-full btn variant-ghost-error" on:click={lost}
+							>clay miss <img
+								class="mx-2 w-6 md:w-8 lg:w-10"
+								src={claymiss}
+								alt="claymiss"
+							/></button
+						>
+						<button type="button" class="m-2 w-full btn variant-ghost-secondary" on:click={undo}
+							>reset 🔄️</button
+						>
+					</div>
 				</div>
 			</div>
 		</div>

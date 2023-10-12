@@ -82,7 +82,7 @@ export const actions: Actions = {
         let teamShotsFired = Number(formData.get('teamShotsFired'))
         let ammo = String(formData.get('roundAmmo'))
         let clays = String(formData.get('roundClays'))
-        ammo = ammo.replaceAll('x', '-')
+        ammo = ammo.replaceAll('x', '-').replaceAll('o', '-')
         clays = clays.replaceAll('x', '-').replaceAll('o', '-')
         await fetch('/api/score/round/' + teamScoreId + '?roundAmmo=' + ammo + '&roundClays=' + clays)
         return { success: true }
