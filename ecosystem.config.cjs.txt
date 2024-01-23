@@ -1,0 +1,16 @@
+module.exports = {
+  apps : [{
+    name   : "freedom-party",
+    script : "./build/index.js",
+    watch: true,
+    autorestart: true,
+    env: {
+        PORT: 3141,
+        ORIGIN: "https://<hostname>",
+        PROTOCOL_HEADER: "x-forwarded-proto",
+        HOST_HEADER: "x-forwarded-host",
+        DATABASE_URL: "postgresql://<user>:<pw>@<host>:<port>/<db>",
+        DIRECT_URL: "postgresql://<user>:<pw>@<host>:<port>/<db>",
+    }
+  }]
+}
