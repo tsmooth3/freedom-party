@@ -12,3 +12,4 @@ firebase-debug.log
 /prisma/dev.db
 prisma/dev.db
 prisma/dev.db
+ecosystem.config.cjs
