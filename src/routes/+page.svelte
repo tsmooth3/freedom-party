@@ -79,7 +79,7 @@
 </script>
 
 {#if isVisible}
-	<div style="position: absolute; left: {x}px; top:{y}px;"
+	<div role="button" aria-pressed="false" style="position: absolute; left: {x}px; top:{y}px;"
 	use:confetti={{
 		particleCount: $reduced_motion ? 0 : undefined,
 		force: 0.7,
@@ -92,7 +92,7 @@
 {/if}
 {#if daysToFreedom === 0}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 			<h1 class="h1">LET'S PARTY!</h1>
 			<h2 class="h2">Freedom Party is Today!</h2>
 			<h4 class="h4">{partyDay.toDateString()}</h4>
@@ -110,21 +110,21 @@
 	/>
 {:else}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 			<h3 class="h3">{daysSinceFreedom} Days Since Last Freedom Party!</h3>
 			<h4 class="h4">{lastpartyDay.toDateString()}</h4>
 		</div> 
 	</div>
 
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 			<h3 class="h3">{daysToFreedom} Days Until Next Freedom Party!</h3>
 			<h4 class="h4">{partyDay.toDateString()}</h4>
 		</div> 
 	</div>
 {/if}
 <div class="flex min-w-[390px] max-w-6xl my-auto mx-auto ">
-	<div class="card card-hover m-3 overflow-hidden variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+	<div role="button" aria-pressed="false" tabindex="0" class="card card-hover m-3 overflow-hidden variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
 		<header>
 			<img src={flag} class="w-full" alt="Post" />
 		</header>
