@@ -9,7 +9,7 @@
 	let inputClays = 2;
 	let inputAmmo = 4;
 	let inputRoundName = 'Round' + ($thisEvent.eventFormat.length + 1);
-	let inputTeamName = 'Team Name';
+	let inputTeamName = getRandomTeamName();
 	let inputS1 = 'Player 1';
 	let inputS2 = 'Player 2';
 
@@ -75,6 +75,56 @@
 				teamScores: $thisEvent.eventFormat
 			}
 		];
+		inputTeamName = getRandomTeamName();
+		inputS1 = 'Player 1';
+		inputS2 = 'Player 2';
+	}
+	function getRandomTeamName() {
+		const teamNames = [
+			"Stars and Stripes",
+			"Liberty Legends",
+			"Freedom Fighters",
+			"American Eagles",
+			"Patriots United",
+			"Liberty Warriors",
+			"Red, White, and Blue Crew",
+			"Independence Icons",
+			"Bravehearts",
+			"Founding Forces",
+			"Liberty Leaders",
+			"Honor Guard",
+			"American Dream Team",
+			"Valor Vanguards",
+			"Liberty Defenders",
+			"The Patriots",
+			"Flag Bearers",
+			"Liberty Guardians",
+			"Constitution Crew",
+			"Unity Warriors",
+			"Freedom Flaggers",
+			"Patriotic Pioneers",
+			"Stars of Freedom",
+			"National Heroes",
+			"Liberty Lancers",
+			"Eagle Squadron",
+			"United We Stand",
+			"Pride of the Nation",
+			"Banner Bearers",
+			"Patriot Pride",
+			"Sovereign Sentinels",
+			"American Glory",
+			"Land of the Free",
+			"Victory Vanguards",
+			"Justice Juggernauts",
+			"Liberty Lightning",
+			"Defenders of Freedom",
+			"Heritage Heroes",
+			"Revolutionary Rulers",
+			"Flag Flyers"
+		];
+
+		const randomIndex = Math.floor(Math.random() * teamNames.length);
+		return teamNames[randomIndex];
 	}
 	function undoTeam() {
 		$thisEvent.eventTeamScores = $thisEvent.eventTeamScores.filter(
@@ -215,9 +265,8 @@
 			summary.
 			<!-- todo <AddTeam /> -->
 			<div class="flex-1 card p-5 m-5">
-				<span class="h3">Event Format</span>
 				<label class="label">
-					<span>Round Name</span>
+					<span>Team Name</span>
 					<input class="input" type="text" name="teamName" bind:value={inputTeamName} />
 					<span>Shooter 1</span>
 					<input class="input" type="text" name="shooter1Name" bind:value={inputS1} />
