@@ -21,7 +21,7 @@
 			{#each data.dbShootEvents as se}
 				<AccordionItem>
 					<svelte:fragment slot="lead"
-						><a href="/shootEvents/{se.id}"><img class="h-8" src={cap} alt="cap" /></a
+						><a href="/watchEvent/{se.id}"><img class="h-8" src={cap} alt="cap" /></a
 						></svelte:fragment
 					>
 					<svelte:fragment slot="summary">

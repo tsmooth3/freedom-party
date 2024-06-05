@@ -226,7 +226,7 @@
 			{/if}
 		</form>
 	</div>
-	<pre>
+	<!-- <pre>
 		{data.dbShootEvents[0].eventName}
 		ShootingTeamId: {shootingTeamId}
 		ShootingTeamName: {shootingTeamName}
@@ -240,7 +240,7 @@
 		scoringDisabled: {scoringDisabled}
 		allRoundsComplete: {allRoundsComplete}
 		totalClays: {totalClays}
-	</pre>
+	</pre> -->
 	{#if eventComplete}
 		<div class="flex my-auto min-w-[390px]">
 			<div class="card m-3 p-3 flex-auto variant-ghost-success text-center">
