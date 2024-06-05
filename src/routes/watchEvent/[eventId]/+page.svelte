@@ -20,32 +20,35 @@
         obj = JSON.parse($dbShootEvents)[0]
         eventTeamScores = obj.eventTeamScores 
     } 
-
 </script>
 
-<div class="flex flex-col mx-auto gap-2 max-w-2xl">
-    <div class="flex-1 card card-hover p-2 text-justify">
-        {$eventName}
-    </div>
-    <div class="flex-1 card card-hover p-2 text-justify">
-        {$ShootingTeamRoundName}
-    </div>
-    <div class="flex-1 card card-hover p-2 text-justify">
-        Now Shooting: {$ShootingTeamName}
+{#if obj?.eventTeamScores}
+    <div class="flex flex-col mx-auto gap-2 max-w-2xl">
         <div class="flex-1 card card-hover p-2 text-justify">
-            Score: {$ShootingTeamTotal} / {$ShootingTeamShotsFired} : {Number($ShootingTeamTotal) / Number($ShootingTeamShotsFired) * 100}
+            {$eventName}
+        </div>
+        <div class="flex-1 card card-hover p-2 text-justify">
+            {$ShootingTeamRoundName}
+        </div>
+        <div class="flex-1 card card-hover p-2 text-justify">
+            Now Shooting: {$ShootingTeamName}
+            <div class="flex-1 card card-hover p-2 text-justify">
+                Score: {$ShootingTeamTotal} / {$ShootingTeamShotsFired} : {Number($ShootingTeamTotal) / Number($ShootingTeamShotsFired) * 100}
+            </div>
+        </div>
+        <div class="flex-1 card card-hover p-2 text-justify">
+            On Deck: {$OnDeckTeamName}
+        </div>
+        <div class="flex-1 card card-hover p-2 text-justify">
+            {#if obj?.eventTeamScores}
+                <ol>
+                {#each obj?.eventTeamScores as ets}
+                    <li>{ets.teamName} : {ets.teamShooter1} | {ets.teamShooter2} |  {ets.teamTotal} / {ets.teamShotsFired}</li>
+                {/each}
+                </ol>
+            {/if}
         </div>
     </div>
-    <div class="flex-1 card card-hover p-2 text-justify">
-        On Deck: {$OnDeckTeamName}
-    </div>
-    <div class="flex-1 card card-hover p-2 text-justify">
-        {#if obj?.eventTeamScores}
-            <ol>
-            {#each obj?.eventTeamScores as ets}
-                <li>{ets.teamName} : {ets.teamShooter1} | {ets.teamShooter2} |  {ets.teamTotal} / {ets.teamShotsFired}</li>
-            {/each}
-            </ol>
-        {/if}
-    </div>
-</div>
+{:else}
+    ...loading
+{/if}
