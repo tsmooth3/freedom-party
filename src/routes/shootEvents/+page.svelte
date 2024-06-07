@@ -157,9 +157,6 @@
 	}
 </script>
 
-<pre>
-    <!-- {JSON.stringify(dbShootEvents, null, 4)} -->
-</pre>
 <div class="flex font-sans flex-col max-w-[650px] mx-auto p-5">
 	<Stepper on:complete={callAddShootEvent}>
 		<Step>
@@ -181,7 +178,6 @@
 			<svelte:fragment slot="header">Add Round Format</svelte:fragment>
 			Specify number of stations and clays and click + Add Round. When finished click next to configure
 			Teams
-			<!-- todo <AddRound /> -->
 			<div class="flex-1 card p-5 m-5">
 				<span class="h3">Event Format</span>
 				<label class="label">
@@ -304,7 +300,6 @@
 					{/each}
 				</div>
 			</div>
-			<!-- todo <AddTeam /> -->
 		</Step>
 		<Step>
 			<svelte:fragment slot="header">Summary</svelte:fragment>
