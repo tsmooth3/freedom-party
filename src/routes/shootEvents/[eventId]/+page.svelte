@@ -29,21 +29,30 @@
 	const inputDate = new Date(eventDate);
 	const formatter = new Intl.DateTimeFormat('en-US', options);
 	const formattedDate = formatter.format(inputDate);
+	let shootingTeamRoundId: number;
+	let shootingTeamId: number;
+	let onDeckTeamId: number;
+	let shootingTeamRoundName: string;
+	let roundAmmo: string;
+	let roundClays: string;
 	$: eventComplete = false;
 	$: if (data.dbShootEvents[0].eventState === 'COMPLETE') eventComplete = true;
 	$: allRoundsComplete = false;
 	$: onDeckTeamName = 'n/a';
 	$: scoringDisabled = false;
-	$: shootingIndex = data.dbEventRounds.findLastIndex((p) => p.roundState === 'COMPLETE');
-	$: shootingTeamId = data.dbEventRounds[0].teamId;
+	$: if (data.dbEventRounds){
+		shootingIndex = data.dbEventRounds.findLastIndex((p) => p.roundState === 'COMPLETE');
+		roundLen = data.dbEventRounds.length;
+		shootingTeamId = data.dbEventRounds[0].teamId;
+		shootingTeamRoundId = data.dbEventRounds[0].id;
+		shootingTeamRoundName = data.dbEventRounds[0].roundName;
+		onDeckTeamId = data.dbEventRounds[1].teamId;
+		roundAmmo = data.dbEventRounds[0].roundAmmo;
+		roundClays = data.dbEventRounds[0].roundClays;
+	}
 	$: shootingTeamName = data.dbShootEvents[0].eventTeamScores[0].teamName;
 	$: shootingTeamTotal = 0;
 	$: shootingTeamShotsFired = 0;
-	$: shootingTeamRoundId = data.dbEventRounds[0].id;
-	$: shootingTeamRoundName = data.dbEventRounds[0].roundName;
-	$: onDeckTeamId = data.dbEventRounds[1].teamId;
-	$: roundAmmo = data.dbEventRounds[0].roundAmmo;
-	$: roundClays = data.dbEventRounds[0].roundClays;
 	$: totalClays = 0;
 	$: eventWinner = data.dbShootEvents[0].eventTeamScores[0];
 	$: winnerClayAccuracy = 0;

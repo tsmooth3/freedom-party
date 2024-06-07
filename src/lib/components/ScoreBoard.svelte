@@ -106,7 +106,7 @@
 		}
 	}
 </script>
-<EventHeading dbShootEvent={shootEvent} shootingTeamName={shootingTeamName} onDeckTeamName={onDeckTeamName} />
+<EventHeading dbShootEvent={shootEvent} shootingTeamName={shootingTeamName} onDeckTeamName={onDeckTeamName} eventWinner={eventWinner}/>
 <div class="flex-col my-auto min-w-[390px]">
     {#each shootEvent.eventTeamScores as ets}
         {#if screenSize > 1365}
