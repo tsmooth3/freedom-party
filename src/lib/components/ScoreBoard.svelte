@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { prismaTeamScore, prismaShootEvent, prismaEventRound } from '$lib/shared/utils';
+	import type { prismaShootEvent, prismaEventRound } from '$lib/shared/utils';
 	import TeamData from './TeamData.svelte';
 	import EventHeading from './EventHeading.svelte';
     export let shootEvent: prismaShootEvent;
