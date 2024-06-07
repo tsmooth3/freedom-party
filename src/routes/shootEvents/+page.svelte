@@ -269,7 +269,13 @@
 			<!-- todo <AddTeam /> -->
 			<div class="flex-1 card p-5 m-5">
 				<label class="label">
-					<span>Team Name</span>
+					<span>
+						Team Name
+						<button type="button" class="flex-1 mx-1 btn variant-ghost-primary" on:click={getNewTeamName}
+						>Random Team Name</button
+					>
+
+					</span>
 					<input class="input" type="text" name="teamName" bind:value={inputTeamName} />
 					<span>Shooter 1</span>
 					<input class="input" type="text" name="shooter1Name" bind:value={inputS1} />
@@ -277,9 +283,7 @@
 					<input class="input" type="text" name="shooter2Name" bind:value={inputS2} />
 				</label>
 				<div class="flex m-1 p-1 justify-end">
-					<button type="button" class="flex mx-1 btn variant-ghost-primary" on:click={getNewTeamName}
-						>Random Team Name</button
-					>
+					
 					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addTeam}
 						>+ Team</button
 					>

@@ -217,11 +217,16 @@
 				{#if scoringDisabled}
 					{#if allRoundsComplete}
 						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
-							>Complete Event</button
-						>
+							>Complete Event</button>
 					{:else}
 						<button type="submit" class="btn variant-outline">Complete Round</button>
 					{/if}
+				{:else}
+					{#if allRoundsComplete}
+						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
+						>Complete Event</button>
+					{/if}
+
 				{/if}
 			{/if}
 		</form>
