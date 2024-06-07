@@ -1,54 +1,58 @@
 <script lang="ts">
-	import type { prismaShootEvent, prismaTeamScore } from '$lib/shared/utils';
-    import { source } from 'sveltekit-sse'
+    import { onMount, onDestroy } from 'svelte';
+    import type { prismaShootEvent, prismaEventRound } from "$lib/shared/utils";
+    import ScoreBoard from '$lib/components/ScoreBoard.svelte';
+    import doglaugh from '$lib/images/doglaugh.gif';
     import type { PageData } from './$types';
 	export let data: PageData;
+    
+    let screenSize: number;  
+    let interval: number;
+    let dbShootEvents: prismaShootEvent[] | null = null;
+    let dbEventRounds: prismaEventRound[] | null = null;
+  
+    async function fetchData(): Promise<void> {
+      try {
+        const response = await fetch('/api/shootEvents/byLeader/' + data.id);
+        if (!response.ok) {
+          throw new Error(`Error fetching data: ${response.statusText}`);
+        }
+        dbShootEvents = await response.json()
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const response2 = await fetch('/api/eventRounds/' + data.id);
+        if (!response2.ok) {
+          throw new Error(`Error fetching data: ${response2.statusText}`);
+        }
+        dbEventRounds = await response2.json()
 
-    const connection = source('/custom-event/' + data.id)
-    const totalClays = connection.select('totalClays')
-    const allRoundsComplete = connection.select('allRoundsComplete')
-    const eventName = connection.select('eventName')
-    const ShootingTeamRoundName = connection.select('ShootingTeamRoundName')
-    const ShootingTeamName = connection.select('ShootingTeamName')
-    const ShootingTeamTotal = connection.select('ShootingTeamTotal')
-    const ShootingTeamShotsFired = connection.select('ShootingTeamShotsFired')
-    const OnDeckTeamName = connection.select('onDeckTeamName')
-    let obj: prismaShootEvent
-    let eventTeamScores: prismaTeamScore[] 
-    const dbShootEvents = connection.select('dbShootEvents')
-    $: if($dbShootEvents) { 
-        obj = JSON.parse($dbShootEvents)[0]
-        eventTeamScores = obj.eventTeamScores 
-    } 
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  
+    onMount(() => {
+      fetchData();
+      interval = window.setInterval(fetchData, 5000); // Poll every 5 seconds
+    });
+  
+    onDestroy(() => {
+      clearInterval(interval);
+    });
 </script>
-
-{#if obj?.eventTeamScores}
-    <div class="flex flex-col mx-auto gap-2 max-w-2xl">
-        <div class="flex-1 card card-hover p-2 text-justify">
-            {$eventName}
-        </div>
-        <div class="flex-1 card card-hover p-2 text-justify">
-            {$ShootingTeamRoundName}
-        </div>
-        <div class="flex-1 card card-hover p-2 text-justify">
-            Now Shooting: {$ShootingTeamName}
-            <div class="flex-1 card card-hover p-2 text-justify">
-                Score: {$ShootingTeamTotal} / {$ShootingTeamShotsFired} : {Number($ShootingTeamTotal) / Number($ShootingTeamShotsFired) * 100}
-            </div>
-        </div>
-        <div class="flex-1 card card-hover p-2 text-justify">
-            On Deck: {$OnDeckTeamName}
-        </div>
-        <div class="flex-1 card card-hover p-2 text-justify">
-            {#if obj?.eventTeamScores}
-                <ol>
-                {#each obj?.eventTeamScores as ets}
-                    <li>{ets.teamName} : {ets.teamShooter1} | {ets.teamShooter2} |  {ets.teamTotal} / {ets.teamShotsFired}</li>
-                {/each}
-                </ol>
-            {/if}
-        </div>
+  
+<svelte:window bind:innerWidth={screenSize} />
+<div>
+    {#if dbShootEvents && dbEventRounds}
+    <ScoreBoard shootEvent={dbShootEvents[0]} eventRounds={dbEventRounds} screenSize={screenSize}/>
+    <div class="flex my-auto min-w-[390px]">
+      <img class="flex-1 mx-auto min-w-[390px] max-w-[690px]" src={doglaugh} alt="duck hunt dog" />
     </div>
-{:else}
-    ...loading
-{/if}
+  {:else}
+        <div>loading...</div>
+  {/if}
+</div>
+  
+  
