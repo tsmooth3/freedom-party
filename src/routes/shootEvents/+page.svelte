@@ -79,6 +79,9 @@
 		inputS1 = 'Player 1';
 		inputS2 = 'Player 2';
 	}
+	function getNewTeamName(){
+		inputTeamName = getRandomTeamName();
+	}
 	function getRandomTeamName() {
 		const teamNames = [
 			"Stars and Stripes",
@@ -274,6 +277,9 @@
 					<input class="input" type="text" name="shooter2Name" bind:value={inputS2} />
 				</label>
 				<div class="flex m-1 p-1 justify-end">
+					<button type="button" class="flex mx-1 btn variant-ghost-primary" on:click={getNewTeamName}
+						>Random Team Name</button
+					>
 					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addTeam}
 						>+ Team</button
 					>

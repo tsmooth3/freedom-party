@@ -338,9 +338,9 @@
 						<svelte:fragment slot="content">
 							{#each se.eventTeamScores as ets}
 								{#if screenSize > 1368}
-									<TeamData teamData={ets} {totalClays} orientation="horizontal" />
+									<TeamData teamData={ets} orientation="horizontal" />
 								{:else}
-									<TeamData teamData={ets} {totalClays} orientation="vertical" />
+									<TeamData teamData={ets} orientation="vertical" />
 								{/if}
 							{/each}
 						</svelte:fragment>
@@ -366,9 +366,9 @@
 						<svelte:fragment slot="content">
 							{#each se.eventTeamScores as ets}
 								{#if screenSize > 1368}
-									<TeamData teamData={ets} {totalClays} orientation="horizontal" />
+									<TeamData teamData={ets} orientation="horizontal" />
 								{:else}
-									<TeamData teamData={ets} {totalClays} orientation="vertical" />
+									<TeamData teamData={ets} orientation="vertical" />
 								{/if}
 							{/each}
 						</svelte:fragment>

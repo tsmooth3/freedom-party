@@ -1,10 +1,10 @@
 <script lang="ts">
+	import LegendCompact from '$lib/components/LegendCompact.svelte';
 	import TeamData from '$lib/components/TeamData.svelte';
 	import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
-	import cap from '$lib/images/capshield.svg';
 	import doglaugh from '$lib/images/doglaugh.gif';
+	import clay from '$lib/images/capshield.svg';
 	import type { PageData } from './$types';
-	import { enhance } from '$app/forms';
 	let screenSize: number;
 	export let data: PageData;
 </script>
@@ -21,7 +21,7 @@
 			{#each data.dbShootEvents as se}
 				<AccordionItem>
 					<svelte:fragment slot="lead"
-						><a href="/watchEvent/{se.id}"><img class="h-8" src={cap} alt="cap" /></a
+						><a href="/watchEvent/{se.id}"><img class="h-8" src={clay} alt="capshield" /></a
 						></svelte:fragment
 					>
 					<svelte:fragment slot="summary">
@@ -38,23 +38,11 @@
 						{#each se.eventTeamScores as ets}
 							{#if screenSize > 1368}
 								<a href="/shootEvents/{se.id}">
-									<TeamData
-										teamData={ets}
-										totalClays={se.eventTeamScores[0].teamScores.reduce((count, score) => {
-											return (count += (score.roundClays || []).length);
-										}, 0)}
-										orientation="horizontal"
-									/>
+									<TeamData teamData={ets} orientation="horizontal"/>
 								</a>
 							{:else}
 								<a href="/shootEvents/{se.id}">
-									<TeamData
-										teamData={ets}
-										totalClays={se.eventTeamScores[0].teamScores.reduce((count, score) => {
-											return (count += (score.roundClays || []).length);
-										}, 0)}
-										orientation="vertical"
-									/>
+									<TeamData teamData={ets} orientation="vertical"/>
 								</a>
 							{/if}
 						{/each}
@@ -67,4 +55,5 @@
 	<div class="flex my-auto min-w-[390px]">
 		<img class="flex-1 mx-auto min-w-[390px] max-w-[690px]" src={doglaugh} alt="duck hunt dog" />
 	</div>
+	<LegendCompact/>
 {/await}

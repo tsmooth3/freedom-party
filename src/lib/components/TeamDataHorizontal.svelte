@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { prismaTeamScore } from '$lib/shared/utils';
-	import RoundHorizontal from './RoundHorizontal.svelte';
 	import RoundHorizontalActive from './RoundHorizontalActive.svelte';
 	export let teamData: prismaTeamScore;
 	export let totalClays: number;
@@ -16,42 +15,50 @@
 
 <div class="flex m-3 gap-3">
 	{#if teamData.teamState === 'ACTIVE'}
-		<div class="flex-1 card card-hover p-4 text-center variant-ghost-success">
-			<h2>{teamData.teamName}</h2>
-			<p>{teamData.teamShooter1} | {teamData.teamShooter2}</p>
-		</div>
-		<span class="divider-vertical" />
-		<div class="flex-1 card card-hover p-4 text-center my-auto variant-ghost-success">
-			<h2>Score</h2>
-			<p>
-				{#if teamData.teamTotal}
-					Clays: {teamData.teamTotal}/{totalClays} : {clayPercentage}% | Ammo: {teamData.teamTotal}/{teamData.teamShotsFired}
-					: {ammoPercentage}%
-				{:else}
-					Clays: 0% | Ammo: 0%
-				{/if}
-			</p>
+		<div class="flex card card-hover mx-auto p-2 variant-outline-success">
+			<div class="flex text-left">
+				<div class="flex-col my-auto min-w-[190px]">
+					<div>{teamData.teamName}</div>
+					<div>{teamData.teamShooter1} | {teamData.teamShooter2}</div>
+					{#if teamData.teamTotal}
+						<div>Clays: {teamData.teamTotal}/{totalClays} : {clayPercentage}% </div>
+						<div>Ammo: {teamData.teamTotal}/{teamData.teamShotsFired} : {ammoPercentage}% </div>
+					{:else}
+						<div>Clays: 0%</div>
+						<div>Ammo: 0%</div>
+					{/if}
+				</div>
+				<div class="flex m-3 gap-3">
+					{#each teamData.teamScores as round}
+						<div><RoundHorizontalActive {round}/></div>
+					{/each}
+				</div>
+			</div>
 		</div>
 	{:else}
-		<div class="flex-1 card card-hover p-4 text-center place-content-center variant-ghost">
-			<h2>{teamData.teamName}</h2>
-			<p>{teamData.teamShooter1} | {teamData.teamShooter2}</p>
-		</div>
-		<span class="divider-vertical" />
-		<div class="flex-1 card card-hover p-4 text-center my-auto variant-ghost">
-			<h2>Score</h2>
-			<p>
-				{#if teamData.teamTotal}
-					Clays: {teamData.teamTotal}/{totalClays} : {clayPercentage}% | Ammo: {teamData.teamTotal}/{teamData.teamShotsFired}
-					: {ammoPercentage}%
-				{:else}
-					Clays: 0% | Ammo: 0%
-				{/if}
-			</p>
+		<div class="flex card card-hover p-2 mx-auto variant-outline-primary">
+			<div class="flex text-left">
+				<div class="flex-col my-auto min-w-[190px]">
+					<div>{teamData.teamName}</div>
+					<div>{teamData.teamShooter1} | {teamData.teamShooter2}</div>
+					{#if teamData.teamTotal}
+						<div>Clays: {teamData.teamTotal}/{totalClays} : {clayPercentage}% </div>
+						<div>Ammo: {teamData.teamTotal}/{teamData.teamShotsFired} : {ammoPercentage}% </div>
+					{:else}
+						<div>Clays: 0%</div>
+						<div>Ammo: 0%</div>
+					{/if}
+				</div>
+				<div class="flex m-3 gap-3">
+					{#each teamData.teamScores as round}
+						<div><RoundHorizontalActive {round}/></div>
+					{/each}
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>
-
+<!-- 
 <div class="flex m-3 gap-3">
 	{#each teamData.teamScores as round}
 		<div class=" flex-auto">
@@ -71,4 +78,4 @@
 		</div>
 	{/each}
 </div>
-<hr class="!border-t-4 mx-10 my-3" />
+<hr class="!border-t-4 mx-10 my-3" /> -->
