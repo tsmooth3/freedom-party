@@ -13,7 +13,7 @@
 	}
 </script>
 
-<div class="flex m-3 gap-3">
+<div class="flex m-3 gap-3 font-sans">
 	{#if teamData.teamState === 'ACTIVE'}
 		<div class="flex card card-hover mx-auto p-2 variant-outline-success">
 			<div class="flex text-left">
