@@ -7,7 +7,7 @@
 	import '../app.postcss';
 	import { LightSwitch } from '@skeletonlabs/skeleton';
 </script>
-<nav class="flex min-w-[390px] sticky top-0 justify-end variant-glass-secondary mb-2 ">
+<nav class="flex min-w-[390px] sticky top-0 font-sans justify-end variant-glass-secondary mb-2 ">
 	<a class="m-3" href="/">Home</a>
 	<a class="m-3" href="/clays">Shoot</a>
 	<a class="m-3" href="/slide">Slide</a>

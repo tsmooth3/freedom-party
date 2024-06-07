@@ -149,10 +149,14 @@
 		}
 	}
 
-	$: if ($myAmmo.includes('-') && $myClays.includes('-')) {
-		scoringDisabled = false;
-	} else {
+	$: if (allRoundsComplete) {
 		scoringDisabled = true;
+	} else {
+		if ($myAmmo.includes('-') && $myClays.includes('-')) {
+			scoringDisabled = false;
+		} else {
+			scoringDisabled = true;
+		}
 	}
 
 	function kill() {
@@ -221,12 +225,6 @@
 					{:else}
 						<button type="submit" class="btn variant-outline">Complete Round</button>
 					{/if}
-				{:else}
-					{#if allRoundsComplete}
-						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
-						>Complete Event</button>
-					{/if}
-
 				{/if}
 			{/if}
 		</form>
@@ -276,7 +274,7 @@
 	{/if}
 	{#if allRoundsComplete == false && data.dbShootEvents[0].eventState !== 'NEW'}
 		<div class="flex my-auto min-w-[390px]">
-			<div class="card m-3 p-3 flex-auto variant-ringed-primary variant-glass-secondary">
+			<div class="card font-sans m-3 p-3 flex-auto variant-ringed-primary variant-glass-secondary">
 				<div class="h2 mx-2">
 					{shootingTeamName}
 				</div>

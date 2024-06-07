@@ -160,7 +160,7 @@
 <pre>
     <!-- {JSON.stringify(dbShootEvents, null, 4)} -->
 </pre>
-<div class="flex flex-col max-w-[650px] mx-auto p-5">
+<div class="flex font-sans flex-col max-w-[650px] mx-auto p-5">
 	<Stepper on:complete={callAddShootEvent}>
 		<Step>
 			<svelte:fragment slot="header">

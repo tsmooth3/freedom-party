@@ -16,7 +16,7 @@
 	<div class="flex my-auto min-w-[390px] justify-end">
 		<a href="/shootEvents"><button type="button" class="btn variant-filled">Add Event</button></a>
 	</div>
-	<div class="flex my-auto min-w-[390px]">
+	<div class="flex font-sans my-auto min-w-[390px]">
 		<Accordion>
 			{#each data.dbShootEvents as se}
 				<AccordionItem>
