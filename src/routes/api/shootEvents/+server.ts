@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
-import type { TeamScore, EventRound } from '$lib/shared/utils';
+import type { Team, Round, Station } from '$lib/shared/utils';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -16,12 +16,12 @@ export const GET: RequestHandler = async ({ url }) => {
                     }
                 },
                 include: {
-                    eventTeamScores: {
+                    eventTeams: {
                         orderBy: {
                             teamState: 'asc'
                         },
                         include: {
-                            teamScores: {
+                            teamRounds: {
                                 orderBy: [
                                     { roundState: 'asc' },
                                     { roundIndex: 'asc' }
@@ -40,12 +40,12 @@ export const GET: RequestHandler = async ({ url }) => {
                     }
                 },
                 include: {
-                    eventTeamScores: {
+                    eventTeams: {
                         orderBy: {
                             id: 'asc'
                         },
                         include: {
-                            teamScores: {
+                            teamRounds: {
                                 orderBy: {
                                     roundIndex: 'asc'
                                 }
@@ -62,9 +62,9 @@ export const GET: RequestHandler = async ({ url }) => {
                 id: sortOrder
             },
             include: {
-                eventTeamScores: {
+                eventTeams: {
                     include: {
-                        teamScores: {
+                        teamRounds: {
                             orderBy: {
                                 roundIndex: 'asc'
                             }
@@ -90,13 +90,13 @@ export const POST: RequestHandler = async ({ request }) => {
         })
         eventId = await newShootEvent.id
 
-        const promise1 = await reqBody.eventTeamScores.forEach(async (team: TeamScore) => {
+        const promise1 = await reqBody.eventTeams.forEach(async (team: Team) => {
             let teamName = team.teamName
             let teamShooter1 = team.teamShooter1
             let teamShooter2 = team.teamShooter2
             let teamState = team.teamState
 
-            const newTeam = await prisma.teamScore.create({
+            const newTeam = await prisma.team.create({
                 data: {
                     eventId,
                     teamName,
@@ -107,26 +107,45 @@ export const POST: RequestHandler = async ({ request }) => {
             })
 
             let teamId = await newTeam.id
-            await team.teamScores.forEach(async (round: EventRound) => {
+            await team.teamScores.forEach(async (round: Round) => {
                 let roundName = round.roundName
                 let roundIndex = round.roundId
-                let roundStations = round.roundStations
+                let roundStationCount = round.roundStations.length
                 let roundAmmo = round.roundAmmo
                 let roundClays = round.roundClays
                 let roundState = round.roundState
-                await prisma.eventRound.create({
+                let newRound = await prisma.round.create({
                     data: {
                         eventId,
                         teamId,
                         roundName,
                         roundIndex,
-                        roundStations,
+                        roundStationCount,
                         roundAmmo,
                         roundClays,
                         roundState
                     }
                 })
+                let roundId = await newRound.id
+                await round.roundStations.forEach(async (station: Station) => {
+                    let stationIndex = station.stationId
+                    let stationAmmo = station.stationAmmo
+                    let stationClays = station.stationClays
+                    let stationState = station.stationState
+                    await prisma.station.create({
+                        data: {
+                            eventId,
+                            teamId,
+                            roundId,
+                            stationIndex,
+                            stationAmmo,
+                            stationClays,
+                            stationState
+                        }
+                    })
+                })
             })
+            
         });
         return await json({ success: true, eventId: eventId });
     } catch (err) {
@@ -138,12 +157,12 @@ export const DELETE: RequestHandler = async ({ url }) => {
     if (url.searchParams.get('eventId')) {
         try {
             let eventId: number = Number(url.searchParams.get('eventId'))
-            const deleteTeamScores = prisma.teamScore.deleteMany({
+            const deleteTeamScores = prisma.team.deleteMany({
                 where: {
                     eventId: eventId
                 }
             })
-            const deleteEventRounds = prisma.eventRound.deleteMany({
+            const deleteEventRounds = prisma.round.deleteMany({
                 where: {
                     eventId: eventId
                 }

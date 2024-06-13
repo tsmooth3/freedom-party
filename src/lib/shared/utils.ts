@@ -5,56 +5,75 @@ export type ShootEvent = {
     eventDate: Date
     eventName: string
     eventState: EventState
-    eventFormat: EventRound[]
-    eventTeamScores: TeamScore[]
+    eventTeams: Team[]
+    eventRounds: Round[]
+    eventStations: Station[]
 }
-export type EventRound = {
+export type Team = {
+    teamId: number
+    teamName: string
+    teamShooter1: string
+    teamShooter2: string
+    teamState: EventState
+    teamRounds: Round[]
+}
+export type Round = {
     roundId: number
     roundName: string
-    roundStations: number
     roundAmmo: string
     roundClays: string
     roundAmmoNum: string
     roundClaysNum: string
     roundState: EventState
+    roundStations: Station[]
 }
-export type TeamScore = {
-    teamId: number
-    teamName: string
-    teamShooter1: string
-    teamShooter2: string
-    teamState: EventState
-    teamScores: EventRound[]
+export type Station = {
+    stationIndex: number
+    stationAmmo: number
+    stationClays: number
+    stationState: EventState
 }
+
 export type prismaShootEvent = {
     id: number
     createdAt: Date
     updatedAt: Date
     eventName: string
+    eventTeams: prismaTeam[]
+    eventRounds: prismaRound[]
+    eventStations: prismaStation[]
     eventState: EventState
-    eventTeamScores: prismaTeamScore[]
 }
-export type prismaTeamScore = {
-    [x: string]: any;
-    teamId: number
+export type prismaTeam = {
+    id: number
     eventId: number
     teamName: string
     teamShooter1: string
     teamShooter2: string
-    teamState: EventState
     teamTotal: number | null
     teamShotsFired: number | null
-    teamScores: prismaEventRound[]
+    teamScores: prismaRound[]
+    teamState: EventState
 }
 
-export type prismaEventRound = {
+export type prismaRound = {
     id: number
     eventId: number
     teamId: number
     roundName: string
     roundIndex: number
-    roundStations: number
     roundAmmo: string
     roundClays: string
+    roundStations: prismaStation[]
     roundState: EventState
+}
+export type prismaStation = {
+    id: number
+    eventId: number
+    teamId: number
+    roundId: number
+    stationIndex: number
+    stationAmmo: string
+    stationClays: string
+    stationState: EventState
 }

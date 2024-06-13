@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { prismaShootEvent, prismaEventRound } from '$lib/shared/utils';
+	import type { prismaShootEvent, prismaRound } from '$lib/shared/utils';
 	import TeamData from './TeamData.svelte';
 	import EventHeading from './EventHeading.svelte';
     export let shootEvent: prismaShootEvent;
-    export let eventRounds: prismaEventRound[];
+    export let eventRounds: prismaRound[];
     export let screenSize: number;
 	let totalClays: number;
     let roundLen = eventRounds.length;
@@ -16,7 +16,7 @@
 	$: scoringDisabled = false;
 	$: shootingIndex = eventRounds.findLastIndex((p) => p.roundState === 'COMPLETE');
 	$: shootingTeamId = eventRounds[0].teamId;
-	$: shootingTeamName = shootEvent.eventTeamScores[0].teamName;
+	$: shootingTeamName = shootEvent.eventTeams[0].teamName;
 	$: shootingTeamTotal = 0;
 	$: shootingTeamShotsFired = 0;
 	$: shootingTeamRoundId = eventRounds[0].id;
@@ -24,15 +24,15 @@
 	$: onDeckTeamId = eventRounds[1].teamId;
 	$: roundAmmo = eventRounds[0].roundAmmo;
 	$: roundClays = eventRounds[0].roundClays;
-	$: eventWinner = shootEvent.eventTeamScores[0];
+	$: eventWinner = shootEvent.eventTeams[0];
 	$: winnerClayAccuracy = 0;
 	$: winnerAmmoAccuracy = 0;
 
 	$: if (shootingIndex + 1 === roundLen) {
 		allRoundsComplete = true;
 		onDeckTeamName = 'All Rounds Complete';
-		shootingTeamId = shootEvent.eventTeamScores[0].teamId
-		shootingTeamName = shootEvent.eventTeamScores[0].teamName + ' | ' + shootEvent.eventTeamScores[0].teamShooter1 + ' - ' + shootEvent.eventTeamScores[0].teamShooter2;
+		shootingTeamId = shootEvent.eventTeams[0].id
+		shootingTeamName = shootEvent.eventTeams[0].teamName + ' | ' + shootEvent.eventTeams[0].teamShooter1 + ' - ' + shootEvent.eventTeams[0].teamShooter2;
 		if (eventWinner.teamTotal !== null && eventWinner.teamShotsFired !== null) {
 			winnerClayAccuracy = Math.round((eventWinner.teamTotal / totalClays) * 100);
 			winnerAmmoAccuracy = Math.round((eventWinner.teamTotal / eventWinner.teamShotsFired) * 100);
@@ -49,12 +49,12 @@
 			if (oRound !== undefined) {
 				onDeckTeamId = oRound.teamId;
 			}
-			let oTeam = shootEvent.eventTeamScores.find((x) => x.id === onDeckTeamId);
+			let oTeam = shootEvent.eventTeams.find((x) => x.id === onDeckTeamId);
 			if (oTeam !== undefined) onDeckTeamName = oTeam.teamName + ' | ' + oTeam.teamShooter1 + ' - ' + oTeam.teamShooter2;
 		}
 		if (sRound !== undefined) {
 			shootingTeamId = sRound.teamId;
-			let sTeam = shootEvent.eventTeamScores.find((x) => x.id === shootingTeamId);
+			let sTeam = shootEvent.eventTeams.find((x) => x.id === shootingTeamId);
 			if (sTeam !== undefined)
 				shootingTeamName = sTeam.teamName + ' | ' + sTeam.teamShooter1 + ' - ' + sTeam.teamShooter2;
 			shootingTeamRoundId = sRound.id;
@@ -108,8 +108,8 @@
 </script>
 <EventHeading dbShootEvent={shootEvent} shootingTeamName={shootingTeamName} onDeckTeamName={onDeckTeamName} eventWinner={eventWinner}/>
 <div class="flex-col my-auto min-w-[390px]">
-    {#each shootEvent.eventTeamScores as ets}
-        {#if screenSize > 1365}
+    {#each shootEvent.eventTeams as ets}
+        {#if screenSize > 1000}
             <div><TeamData teamData={ets} orientation="horizontal"/></div>
         {:else}
             <div><TeamData teamData={ets} orientation="vertical"/></div>

@@ -4,7 +4,7 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ params }) => {
     const eventId = Number(params.eventId)
-    const teamScores = await prisma.teamScore.findMany({
+    const teamScores = await prisma.team.findMany({
         where: {
             eventId: {
                 equals: eventId

@@ -11,20 +11,20 @@ export const GET: RequestHandler = async ({ url }) => {
         const teamId2 = Number(url.searchParams.get('teamId2'))
         const teamScoreId = Number(url.searchParams.get('teamScoreId'))
         try {
-            const teamScoreResponse = prisma.teamScore.update({
+            const teamScoreResponse = prisma.team.update({
                 where: { id: teamId },
                 data: { teamState: teamState }
             })
-            const teamScore2Response = prisma.teamScore.update({
+            const teamScore2Response = prisma.team.update({
                 where: { id: teamId2 },
                 data: { teamState: "ACTIVE" }
             })
-            const eventRoundResponse = prisma.eventRound.update({
+            const eventRoundResponse = prisma.round.update({
                 where: { id: teamScoreId },
                 data: { roundState: "COMPLETE" }
             })
             const transactions = await prisma.$transaction([teamScoreResponse, teamScore2Response, eventRoundResponse])
-            const teamScores = await prisma.teamScore.findMany({
+            const teamScores = await prisma.team.findMany({
                 where: {
                     eventId: {
                         equals: eventId
@@ -43,7 +43,7 @@ export const GET: RequestHandler = async ({ url }) => {
             } else {
                 onDeck++;
             }
-            const setOndeck = prisma.teamScore.update({
+            const setOndeck = prisma.team.update({
                 where: { id: teamScores[onDeck].id },
                 data: { teamState: 'ONDECK' }
             })

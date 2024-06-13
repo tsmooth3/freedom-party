@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "../$types";
-import type { prismaEventRound, prismaShootEvent, prismaTeamScore } from "$lib/shared/utils";
+import type { prismaRound, prismaShootEvent, prismaTeam } from "$lib/shared/utils";
 import type { Actions } from "@sveltejs/kit";
 import { invalidateAll } from "$app/navigation";
 
@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
     const dbActiveShootEventResponse = await fetch('/api/shootEvents?eventId=' + id + '&active=true')
     const dbActiveShootEvents: prismaShootEvent[] = await dbActiveShootEventResponse.json()
     const dbEventRoundsResponse = await fetch('/api/eventRounds/' + id)
-    const dbEventRounds: prismaEventRound[] = await dbEventRoundsResponse.json()
+    const dbEventRounds: prismaRound[] = await dbEventRoundsResponse.json()
 
     return { dbShootEvents, dbEventRounds, dbActiveShootEvents }
 };

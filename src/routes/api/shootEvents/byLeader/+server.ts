@@ -10,13 +10,13 @@ export const GET: RequestHandler = async ({ }) => {
             id: sortOrder
         },
         include: {
-            eventTeamScores: {
+            eventTeams: {
                 orderBy: [
                     { teamTotal: 'desc' },
                     { teamShotsFired: 'asc' }
                 ],
                 include: {
-                    teamScores: {
+                    teamRounds: {
                         orderBy: {
                             roundIndex: 'asc'
                         }

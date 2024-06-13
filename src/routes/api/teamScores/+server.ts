@@ -4,7 +4,7 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ url }) => {
     if (url.searchParams.get('eventId')) {
-        const teamScores = await prisma.teamScore.findMany({
+        const teamScores = await prisma.team.findMany({
             where: {
                 eventId: {
                     equals: Number(url.searchParams.get('eventId'))
@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ url }) => {
                 id: 'asc'
             },
             include: {
-                teamScores: {
+                teamRounds: {
                     orderBy: {
                         roundIndex: 'asc'
                     }
@@ -23,6 +23,6 @@ export const GET: RequestHandler = async ({ url }) => {
         })
         return json(teamScores)
     }
-    const teamScores = await prisma.teamScore.findMany()
+    const teamScores = await prisma.team.findMany()
     return json(teamScores)
 };

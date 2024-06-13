@@ -1,12 +1,11 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 import type { RequestHandler } from './$types';
-// import type { EventState, prismaEventRound } from '$lib/shared/utils';
 
 export const GET: RequestHandler = async ({ params }) => {
     let eventId = params.eventId
     try {
-        const eventRounds = await prisma.eventRound.findMany({
+        const eventRounds = await prisma.round.findMany({
             where: {
                 eventId: {
                     equals: Number(eventId)

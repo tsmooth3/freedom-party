@@ -11,13 +11,13 @@ export const GET: RequestHandler = async ({ params }) => {
             id: eventId
         },
         include: {
-            eventTeamScores: {
+            eventTeams: {
                 orderBy: [
                     { teamTotal: 'desc' },
                     { teamShotsFired: 'asc' }
                 ],
                 include: {
-                    teamScores: {
+                    teamRounds: {
                         orderBy: {
                             roundIndex: 'asc'
                         }

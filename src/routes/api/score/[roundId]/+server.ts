@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
         const roundAmmo = String(url.searchParams.get('roundAmmo'))
         const roundClays = String(url.searchParams.get('roundClays'))
         try {
-            await prisma.eventRound.update({
+            await prisma.round.update({
                 where: { id: teamScoreId },
                 data: {
                     roundAmmo: roundAmmo,

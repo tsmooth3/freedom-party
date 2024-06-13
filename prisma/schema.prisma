@@ -1,10 +1,14 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// datasource db {
+//   provider  = "postgresql"
+//   url       = env("DATABASE_URL")
+//   directUrl = env("DIRECT_URL")
+// }
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "sqlite"
+  url      = "file:prisma/fp.db"
 }
 
 generator client {
@@ -16,29 +20,14 @@ model ShootEvent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  eventName       String
-  eventState      String
-  eventFormat     EventRound[]
-  eventTeamScores TeamScore[]
+  eventName     String
+  eventState    String
+  eventTeams    Team[]
+  eventRounds   Round[]
+  eventStations Station[]
 }
 
-model EventRound {
-  id Int @id @default(autoincrement())
-
-  event   ShootEvent @relation(fields: [eventId], references: [id])
-  eventId Int
-  team    TeamScore  @relation(fields: [teamId], references: [id])
-  teamId  Int
-
-  roundName     String
-  roundIndex    Int
-  roundStations Int
-  roundAmmo     String
-  roundClays    String
-  roundState    String
-}
-
-model TeamScore {
+model Team {
   id Int @id @default(autoincrement())
 
   event   ShootEvent @relation(fields: [eventId], references: [id])
@@ -48,7 +37,41 @@ model TeamScore {
   teamShooter1   String
   teamShooter2   String
   teamState      String
-  teamScores     EventRound[]
-  teamTotal      Int?         @default(0)
-  teamShotsFired Int?         @default(0)
+  teamRounds     Round[]
+  teamStations   Station[]
+  teamTotal      Int?      @default(0)
+  teamShotsFired Int?      @default(0)
+}
+
+model Round {
+  id Int @id @default(autoincrement())
+
+  event   ShootEvent @relation(fields: [eventId], references: [id])
+  eventId Int
+  team    Team       @relation(fields: [teamId], references: [id])
+  teamId  Int
+
+  roundName         String
+  roundIndex        Int
+  roundStationCount Int
+  roundStations     Station[]
+  roundAmmo         String
+  roundClays        String
+  roundState        String
+}
+
+model Station {
+  id Int @id @default(autoincrement())
+
+  event   ShootEvent @relation(fields: [eventId], references: [id])
+  eventId Int
+  team    Team       @relation(fields: [teamId], references: [id])
+  teamId  Int
+  round   Round      @relation(fields: [roundId], references: [id])
+  roundId Int
+
+  stationIndex Int
+  stationAmmo  String
+  stationClays String
+  stationState String
 }

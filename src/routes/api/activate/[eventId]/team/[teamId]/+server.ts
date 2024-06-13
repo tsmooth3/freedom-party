@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ params }) => {
     const eventId = Number(params.eventId)
     const teamId = Number(params.teamId)
     try {
-        const teamScoreResponse = await prisma.teamScore.update({
+        const teamScoreResponse = await prisma.team.update({
             where: { id: teamId, eventId: eventId },
             data: { teamState: "ACTIVE" }
         })

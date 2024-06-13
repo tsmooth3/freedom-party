@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { prismaTeamScore } from '$lib/shared/utils';
+	import type { prismaTeam } from '$lib/shared/utils';
 	import RoundVertical from './RoundVertical.svelte';
-	export let teamData: prismaTeamScore;
+	export let teamData: prismaTeam;
 	export let totalClays: number;
 
 	$: clayPercentage = 0;

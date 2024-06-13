@@ -6,13 +6,13 @@ export const GET: RequestHandler = async ({ params }) => {
 
     const eventId = Number(params.eventId)
     try {
-        const teamScoresResponse = prisma.teamScore.updateMany({
+        const teamScoresResponse = prisma.team.updateMany({
             where: { eventId: eventId },
             data: {
                 teamState: "COMPLETE"
             }
         })
-        const eventRoundsResponse = prisma.eventRound.updateMany({
+        const eventRoundsResponse = prisma.round.updateMany({
             where: { eventId: eventId },
             data: {
                 roundState: "COMPLETE"

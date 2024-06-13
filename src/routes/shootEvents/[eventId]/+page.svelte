@@ -50,11 +50,11 @@
 		roundAmmo = data.dbEventRounds[0].roundAmmo;
 		roundClays = data.dbEventRounds[0].roundClays;
 	}
-	$: shootingTeamName = data.dbShootEvents[0].eventTeamScores[0].teamName;
+	$: shootingTeamName = data.dbShootEvents[0].eventTeams[0].teamName;
 	$: shootingTeamTotal = 0;
 	$: shootingTeamShotsFired = 0;
 	$: totalClays = 0;
-	$: eventWinner = data.dbShootEvents[0].eventTeamScores[0];
+	$: eventWinner = data.dbShootEvents[0].eventTeams[0];
 	$: winnerClayAccuracy = 0;
 	$: winnerAmmoAccuracy = 0;
 
@@ -95,14 +95,14 @@
 			if (oRound !== undefined) {
 				onDeckTeamId = oRound.teamId;
 			}
-			let oTeam = data.dbShootEvents[0].eventTeamScores.find(
+			let oTeam = data.dbShootEvents[0].eventTeams.find(
 				(x) => x.id === onDeckTeamId
 			)?.teamName;
 			if (oTeam !== undefined) onDeckTeamName = oTeam;
 		}
 		if (sRound !== undefined) {
 			shootingTeamId = sRound.teamId;
-			let sTeam = data.dbShootEvents[0].eventTeamScores.find((x) => x.id === shootingTeamId);
+			let sTeam = data.dbShootEvents[0].eventTeams.find((x) => x.id === shootingTeamId);
 			if (sTeam !== undefined)
 				shootingTeamName = sTeam.teamName + ' | ' + sTeam.teamShooter1 + ' - ' + sTeam.teamShooter2;
 			shootingTeamRoundId = sRound.id;
@@ -348,7 +348,7 @@
 							{/if}
 						</svelte:fragment>
 						<svelte:fragment slot="content">
-							{#each se.eventTeamScores as ets}
+							{#each se.eventTeams as ets}
 								{#if screenSize > 1368}
 									<TeamData teamData={ets} orientation="horizontal" />
 								{:else}
@@ -376,7 +376,7 @@
 							{/if}
 						</svelte:fragment>
 						<svelte:fragment slot="content">
-							{#each se.eventTeamScores as ets}
+							{#each se.eventTeams as ets}
 								{#if screenSize > 1368}
 									<TeamData teamData={ets} orientation="horizontal" />
 								{:else}

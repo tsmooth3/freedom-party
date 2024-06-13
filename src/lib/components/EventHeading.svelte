@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { prismaShootEvent, prismaTeamScore } from "$lib/shared/utils";
+	import type { prismaShootEvent, prismaTeam } from "$lib/shared/utils";
 	import LegendCompact from "./LegendCompact.svelte";
     export let dbShootEvent: prismaShootEvent;
-    export let eventWinner: prismaTeamScore;
+    export let eventWinner: prismaTeam;
     let eventName: String = dbShootEvent.eventName;
 	const options: Intl.DateTimeFormatOptions = {
 		year: 'numeric',

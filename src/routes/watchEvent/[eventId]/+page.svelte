@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
-    import type { prismaShootEvent, prismaEventRound } from "$lib/shared/utils";
+    import type { prismaShootEvent, prismaRound } from "$lib/shared/utils";
     import ScoreBoard from '$lib/components/ScoreBoard.svelte';
     import doglaugh from '$lib/images/doglaugh.gif';
     import type { PageData } from './$types';
@@ -9,7 +9,7 @@
     let screenSize: number;  
     let interval: number;
     let dbShootEvents: prismaShootEvent[] | null = null;
-    let dbEventRounds: prismaEventRound[] | null = null;
+    let dbEventRounds: prismaRound[] | null = null;
   
     async function fetchData(): Promise<void> {
       try {

@@ -5,8 +5,8 @@
 	import clay from '$lib/images/capshield.svg';
 	import clayhit from '$lib/images/capshield_hit.svg';
 	import claymiss from '$lib/images/capshield_miss.svg';
-	import type { prismaEventRound } from '$lib/shared/utils';
-	export let round: prismaEventRound;
+	import type { prismaRound } from '$lib/shared/utils';
+	export let round: prismaRound;
 </script>
 
 {#if round.roundState === 'COMPLETE'}

@@ -14,15 +14,15 @@ export const GET: RequestHandler = async ({ url }) => {
                 where: { id: eventId },
                 data: { eventState: "ACTIVE" }
             })
-            const teamScoreResponse = prisma.teamScore.update({
+            const teamScoreResponse = prisma.team.update({
                 where: { id: teamId },
                 data: { teamState: "ACTIVE" }
             })
-            const teamScore2Response = prisma.teamScore.update({
+            const teamScore2Response = prisma.team.update({
                 where: { id: teamId2 },
                 data: { teamState: "ONDECK" }
             })
-            const eventRoundResponse = prisma.eventRound.update({
+            const eventRoundResponse = prisma.round.update({
                 where: { id: teamScoreId },
                 data: { roundState: "ACTIVE" }
             })

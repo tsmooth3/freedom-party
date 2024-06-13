@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { prismaTeamScore } from '$lib/shared/utils';
+	import type { prismaTeam } from '$lib/shared/utils';
 	import TeamDataHorizontal from './TeamDataHorizontal.svelte';
 	import TeamDataVertical from './TeamDataVertical.svelte';
-	export let teamData: prismaTeamScore;
+	export let teamData: prismaTeam;
 	let totalClays: number;
 	$: totalClays = teamData.teamScores
 		.filter((score) => score.roundState === 'COMPLETE')

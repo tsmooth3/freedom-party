@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 import type { RequestHandler } from './$types';
-import type { EventState, prismaEventRound } from '$lib/shared/utils';
+import type { EventState, prismaRound } from '$lib/shared/utils';
 
 export const GET: RequestHandler = async ({ url }) => {
     let eventId: number | undefined = Number(url.searchParams.get('eventId'))
@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
         if (incomplete) {
             try {
-                const inCompleteRounds = await prisma.eventRound.findMany({
+                const inCompleteRounds = await prisma.round.findMany({
                     where: {
                         eventId: {
                             equals: eventId
@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ url }) => {
             }
         } else if (teamId && roundIndex) {
             try {
-                const eventRounds = await prisma.eventRound.findFirstOrThrow({
+                const eventRounds = await prisma.round.findFirstOrThrow({
                     where: {
                         eventId: {
                             equals: eventId
@@ -58,7 +58,7 @@ export const GET: RequestHandler = async ({ url }) => {
         } else {
 
             try {
-                const eventRounds = await prisma.eventRound.findMany({
+                const eventRounds = await prisma.round.findMany({
                     where: {
                         eventId: {
                             equals: eventId
@@ -80,7 +80,7 @@ export const GET: RequestHandler = async ({ url }) => {
         }
     } else {
         try {
-            const eventRounds = await prisma.eventRound.findMany()
+            const eventRounds = await prisma.round.findMany()
             return json(eventRounds)
         } catch (error) {
             return json({ success: false, message: error })
@@ -92,7 +92,7 @@ export const PUT: RequestHandler = async ({ url, request }) => {
     let eventId: number | undefined = Number(url.searchParams.get('eventId'))
     let teamId: number | undefined = Number(url.searchParams.get('teamId'))
     let roundIndex: number | undefined = Number(url.searchParams.get('roundIndex'))
-    let body: prismaEventRound = await request.json()
+    let body: prismaRound = await request.json()
     let state: EventState
     if (body.roundClays.match("-")) {
         state = "ACTIVE"
@@ -101,7 +101,7 @@ export const PUT: RequestHandler = async ({ url, request }) => {
     }
     if (eventId === body.eventId && teamId === body.teamId && roundIndex === body.roundIndex) {
         try {
-            const eventRound = await prisma.eventRound.update({
+            const eventRound = await prisma.round.update({
                 where: {
                     id: body.id,
                     eventId: eventId,

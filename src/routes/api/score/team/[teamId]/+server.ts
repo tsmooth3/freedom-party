@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
         const teamTotal = Number(url.searchParams.get('teamTotal'))
         const teamShotsFired = Number(url.searchParams.get('teamShotsFired'))
         try {
-            await prisma.teamScore.update({
+            await prisma.team.update({
                 where: { id: teamId },
                 data: {
                     teamTotal: teamTotal,

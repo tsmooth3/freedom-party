@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { prismaTeamScore } from '$lib/shared/utils';
+	import type { prismaTeam } from '$lib/shared/utils';
 	import RoundHorizontalActive from './RoundHorizontalActive.svelte';
-	export let teamData: prismaTeamScore;
+	export let teamData: prismaTeam;
 	export let totalClays: number;
 
 	$: clayPercentage = 0;
@@ -58,24 +58,3 @@
 		</div>
 	{/if}
 </div>
-<!-- 
-<div class="flex m-3 gap-3">
-	{#each teamData.teamScores as round}
-		<div class=" flex-auto">
-			{#if round.roundState === 'ACTIVE'}
-				<RoundHorizontalActive
-					roundName={round.roundName}
-					clays={round.roundClays}
-					ammos={round.roundAmmo}
-				/>
-			{:else}
-				<RoundHorizontal
-					roundName={round.roundName}
-					clays={round.roundClays}
-					ammos={round.roundAmmo}
-				/>
-			{/if}
-		</div>
-	{/each}
-</div>
-<hr class="!border-t-4 mx-10 my-3" /> -->
