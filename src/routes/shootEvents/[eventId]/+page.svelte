@@ -205,7 +205,7 @@
 {#await data}
 	<p>Loading ...</p>
 {:then data}
-	<div class="flex p-1 min-w-[390px] justify-end">
+	<div class="flex-1 my-auto min-w-[390px] justify-center">
 		<form method="POST" action="?/completeRound" use:enhance>
 			<input type="hidden" name="eventId" value={data.dbShootEvents[0].id} />
 			<input type="hidden" name="teamState" value={teamState} />
@@ -214,27 +214,95 @@
 			<input type="hidden" name="teamId" value={shootingTeamId} />
 			<input type="hidden" name="teamId2" value={onDeckTeamId} />
 			<input type="hidden" name="teamScoreId" value={shootingTeamRoundId} />
+			<input type="hidden" name="roundAmmo" bind:value={$myAmmo} />
+			<input type="hidden" name="roundClays" bind:value={$myClays} />
 			{#if data.dbShootEvents[0].eventState === 'NEW'}
 				<button
 					formaction="?/startEvent"
 					type="submit"
-					class="btn variant-outline-primary variant-ghost-primary">Start Event</button
+					class="btn w-full variant-outline-primary variant-ghost-primary">Start Event</button
 				>
-			{:else if eventComplete}
-				<button disabled={true} class="btn variant-outline-success variant-ghost-primary"
-					>Event Complete</button
-				>
-			{:else}
-				<input type="hidden" name="roundAmmo" bind:value={$myAmmo} />
-				<input type="hidden" name="roundClays" bind:value={$myClays} />
-				{#if scoringDisabled}
-					{#if allRoundsComplete}
-						<button formaction="?/completeEvent" type="submit" class="btn variant-outline"
-							>Complete Event</button>
-					{:else}
-						<button type="submit" class="btn variant-outline">Complete Round</button>
-					{/if}
+			{:else if eventComplete || allRoundsComplete}
+				<div class="flex my-auto min-w-[390px]">
+					<div class="card m-3 p-3 flex-auto variant-ghost-success text-center">
+						<h1 class="h1">{eventName}</h1>
+						<h3 class="h3">{formattedDate}</h3>
+						<h1 class="h1">Event Winner!</h1>
+						<h1 class="h1">{eventWinner.teamName}</h1>
+						<h2>
+							{eventWinner.teamShooter1}
+							| {eventWinner.teamShooter2}
+						</h2>
+						<h2>
+							{eventWinner.teamTotal} / {totalClays} Clays Broken |
+							{winnerClayAccuracy}% Accuracy
+						</h2>
+						<h2>
+							{eventWinner.teamShotsFired} Shots Fired | {winnerAmmoAccuracy}% Accuracy
+						</h2>
+					</div>
+				</div>
+				{#if eventComplete != true}
+					<button disabled={eventComplete} formaction="?/completeEvent" type="submit" class="btn w-full variant-outline-success variant-ghost-primary">Complete Event</button>
 				{/if}
+			{:else}
+				<div class="flex my-auto min-w-[390px]">
+					<div class="card m-3 p-3 flex-auto variant-ringed-secondary text-center">
+						<h1 class="h1">{eventName}</h1>
+						<h3 class="h3">{formattedDate}</h3>
+					</div>
+				</div>
+			{/if}
+			{#if allRoundsComplete == false && data.dbShootEvents[0].eventState !== 'NEW'}
+				<div class="flex my-auto min-w-[390px]">
+					<div class="card font-sans m-3 p-3 flex-auto variant-ringed-primary variant-glass-secondary">
+						<div class="h2 mx-2">
+							{shootingTeamName}
+						</div>
+						<div class="mx-2">
+							Team Score: {$myTeamTotal}
+						</div>
+						<div class="mx-2">
+							Total Shots Fired: {$myTeamShotsFired}
+						</div>
+						<div class="my-2 mx-5">
+							<RoundVertical
+								roundName={shootingTeamRoundName}
+								roundState=""
+								ammos={$myAmmo}
+								clays={$myClays}
+							/>
+						</div>
+						<div class="flex-auto">
+							<div class="flex m-1 justify-start">
+								<button type="button" class="m-2 w-full btn variant-ghost-warning" on:click={shot}
+									>shot miss <img class="mx-2 h-6 md:h-8 lg:h-10" src={shellmiss} alt="shell" /></button
+								>
+								<button type="button" class="m-2 w-full btn variant-ghost-success" on:click={kill}
+									>shot <img class="mx-2 h-6 md:h-8 lg:h-10" src={shellhit} alt="shell" /> kill
+									<img class="mx-2 w-6 md:w-8 lg:w-10" src={clayhit} alt="clayhit" /></button
+								>
+							</div>
+							<div class="flex m-1 justify-start">
+								<button type="button" class="m-2 w-full btn variant-ghost-error" on:click={lost}
+									>clay miss <img
+										class="mx-2 w-6 md:w-8 lg:w-10"
+										src={claymiss}
+										alt="claymiss"
+									/></button
+								>
+								<button type="button" class="m-2 w-full btn variant-ghost-secondary" on:click={undo}
+									>reset 🔄️</button
+								>
+							</div>
+							<div class="flex m-1 justify-end">
+								{#if scoringDisabled}
+									<button type="submit" class="m-2 w-auto btn variant-outline-primary">Complete Round</button>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
 			{/if}
 		</form>
 	</div>
@@ -253,80 +321,7 @@
 		allRoundsComplete: {allRoundsComplete}
 		totalClays: {totalClays}
 	</pre> -->
-	{#if eventComplete}
-		<div class="flex my-auto min-w-[390px]">
-			<div class="card m-3 p-3 flex-auto variant-ghost-success text-center">
-				<h1 class="h1">{eventName}</h1>
-				<h3 class="h3">{formattedDate}</h3>
-				<h1 class="h1">Event Winner!</h1>
-				<h1 class="h1">{eventWinner.teamName}</h1>
-				<h2>
-					{eventWinner.teamShooter1}
-					| {eventWinner.teamShooter2}
-				</h2>
-				<h2>
-					{eventWinner.teamTotal} / {totalClays} Clays Broken |
-					{winnerClayAccuracy}% Accuracy
-				</h2>
-				<h2>
-					{eventWinner.teamShotsFired} Shots Fired | {winnerAmmoAccuracy}% Accuracy
-				</h2>
-			</div>
-		</div>
-	{:else}
-		<div class="flex my-auto min-w-[390px]">
-			<div class="card m-3 p-3 flex-auto variant-ringed-secondary text-center">
-				<h1 class="h1">{eventName}</h1>
-				<h3 class="h3">{formattedDate}</h3>
-			</div>
-		</div>
-	{/if}
-	{#if allRoundsComplete == false && data.dbShootEvents[0].eventState !== 'NEW'}
-		<div class="flex my-auto min-w-[390px]">
-			<div class="card font-sans m-3 p-3 flex-auto variant-ringed-primary variant-glass-secondary">
-				<div class="h2 mx-2">
-					{shootingTeamName}
-				</div>
-				<div class="mx-2">
-					Team Score: {$myTeamTotal}
-				</div>
-				<div class="mx-2">
-					Total Shots Fired: {$myTeamShotsFired}
-				</div>
-				<div class="my-2 mx-5">
-					<RoundVertical
-						roundName={shootingTeamRoundName}
-						roundState=""
-						ammos={$myAmmo}
-						clays={$myClays}
-					/>
-				</div>
-				<div class="flex-auto">
-					<div class="flex m-1 justify-start">
-						<button type="button" class="m-2 w-full btn variant-ghost-warning" on:click={shot}
-							>shot miss <img class="mx-2 h-6 md:h-8 lg:h-10" src={shellmiss} alt="shell" /></button
-						>
-						<button type="button" class="m-2 w-full btn variant-ghost-success" on:click={kill}
-							>shot <img class="mx-2 h-6 md:h-8 lg:h-10" src={shellhit} alt="shell" /> kill
-							<img class="mx-2 w-6 md:w-8 lg:w-10" src={clayhit} alt="clayhit" /></button
-						>
-					</div>
-					<div class="flex m-1 justify-start">
-						<button type="button" class="m-2 w-full btn variant-ghost-error" on:click={lost}
-							>clay miss <img
-								class="mx-2 w-6 md:w-8 lg:w-10"
-								src={claymiss}
-								alt="claymiss"
-							/></button
-						>
-						<button type="button" class="m-2 w-full btn variant-ghost-secondary" on:click={undo}
-							>reset 🔄️</button
-						>
-					</div>
-				</div>
-			</div>
-		</div>
-	{/if}
+	
 
 	<div class="flex my-auto min-w-[390px]">
 		<Accordion>
