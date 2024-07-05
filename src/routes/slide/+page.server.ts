@@ -6,8 +6,12 @@ import { invalidateAll } from "$app/navigation";
 export const load: PageServerLoad = async ({ fetch }) => {
     const dbSlidesResponse = await fetch('/api/slides')
     const dbSlides: prismaSlide[] = await dbSlidesResponse.json()
-
-    return { dbSlides }
+    if (dbSlides) {
+        return { dbSlides }
+    }
+    else {
+        return { } 
+    }
 };
 
 export const actions: Actions = {
