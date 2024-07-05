@@ -4,11 +4,11 @@ import { derived } from 'svelte/store';
 import type { ShootEvent, TeamScore, prismaShootEvent, prismaTeamScore } from "$lib/shared/utils"
 
 export let localShootEvents: ShootEvent[] = []
-let uid = Date.now();
+let uid = Math.floor(1000 + Math.random() * 9000);
 export let localShootEvent: ShootEvent = {
     eventId: uid,
     eventDate: new Date(),
-    eventName: "Freedom_Clays_" + uid,
+    eventName: "Freedom Clays " + uid,
     eventState: "NEW",
     eventFormat: [],
     eventTeamScores: []
@@ -42,11 +42,11 @@ export function local_addShootEvent(se: ShootEvent) {
 }
 
 export function resetShootEvent() {
-    let uid = Date.now();
+    let uid = Math.floor(1000 + Math.random() * 9000);
     let newShootEvent: ShootEvent = {
         eventId: uid,
         eventDate: new Date(),
-        eventName: "Freedom_Clays_" + uid,
+        eventName: "Freedom Clays " + uid,
         eventState: "NEW",
         eventFormat: [],
         eventTeamScores: []
