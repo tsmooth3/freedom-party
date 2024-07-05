@@ -58,3 +58,11 @@ export type prismaEventRound = {
     roundClays: string
     roundState: EventState
 }
+
+export type prismaSlide = {
+    id: number
+    timeStamp: Date
+    sliderName: string
+    sliderFPS: number
+    sliderMPH: string
+}
