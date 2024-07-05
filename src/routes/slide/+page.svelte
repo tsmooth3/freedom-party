@@ -13,7 +13,7 @@
     $: if (data.dbSlides) {
         tableSimple = {
         head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
-        body: tableMapperValues(data.dbSlides, ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
+        body: tableMapperValues(data?.dbSlides, ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
         };
 
     } else {
