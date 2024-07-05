@@ -44,3 +44,11 @@ model TeamScore {
   teamScores     EventRound[]
   event          ShootEvent   @relation(fields: [eventId], references: [id])
 }
+
+model Slides {
+  id         Int      @id @default(autoincrement())
+  timeStamp  DateTime @default(now())
+  sliderName String
+  sliderFPS  Int
+  sliderMPH  Decimal
+}
