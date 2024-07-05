@@ -22,7 +22,7 @@
 
 {#await data.dbSlides}
     <p>loading ...</p>
-{:then }
+{:then data}
     <form method="POST" action="?/submitSpeed" use:enhance>
         <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div class="p-3">
