@@ -2,63 +2,34 @@
     import { Table, tableMapperValues } from '@skeletonlabs/skeleton';
     import type { TableSource } from '@skeletonlabs/skeleton';
     import type { PageData } from './$types';
-	import type { prismaSlide } from '$lib/shared/utils';
     import { enhance } from '$app/forms';
 
     let inputName: string;
     let inputSpeed: number;
     export let data: PageData;
-    let sourceData: prismaSlide[];
-
-    // let sourceData: prismaSlide[] = []
-    // data.dbSlides[0].id
-    // data.dbSlides[0].timeStamp
-    // data.dbSlides[0].sliderName
-    // data.dbSlides[0].sliderFPS
-    // data.dbSlides[0].sliderMPH
-
-    // $: if(data.dbSlides){   
-    //     data.dbSlides.forEach(element => {
-    //         sourceData.push(element)
-    //     });
-    // }
-
-    // const sourceData = [
-    //     { position: 1, name: 'Justin', topSpeed: 23, trys: 4 },
-    //     { position: 2, name: 'Alex', topSpeed: 22, trys: 4 },
-    //     { position: 3, name: 'Burt', topSpeed: 22, trys: 4 },
-    //     { position: 4, name: 'Derek', topSpeed: 22, trys: 2 },
-    // ];
 
     let tableSimple: TableSource
 
     $: if (data.dbSlides) {
-
         tableSimple = {
-        // A list of heading labels.
         head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
-        // The data visibly shown in your table body UI.
         body: tableMapperValues(data.dbSlides, ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
-        // Optional: The data returned when interactive is enabled and a row is clicked.
-        // meta: tableMapperValues(sourceData, ['position', 'name', 'symbol', 'weight']),
-        // Optional: A list of footer labels.
-        // foot: ['Total', '', '<code class="code">5</code>']
         };
 
     } else {
         tableSimple = {
             head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
-            body: tableMapperValues([], ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
+            body: tableMapperValues([], []),
         }
     }
 
 </script>
 
-{#await data}
-<p>loading...</p>    
-{:then data } 
-<form method="POST" action="?/submitSpeed" use:enhance>
-    <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
+<!-- {#await data}
+    <p>loading...</p>    
+{:then data }  -->
+    <form method="POST" action="?/submitSpeed" use:enhance>
+        <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div class="p-3">
                 <div class="flex-col">
                     <div>
@@ -88,4 +59,4 @@
         <Table source={tableSimple} interactive={true} regionHeadCell="text-right" regionCell="text-right"/>
     </div>
         
-{/await}
+<!-- {/await} -->
