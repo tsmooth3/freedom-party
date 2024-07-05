@@ -1,5 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider  = "postgresql"
@@ -7,15 +8,10 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model ShootEvent {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   eventName       String
   eventState      String
   eventFormat     EventRound[]
@@ -23,32 +19,28 @@ model ShootEvent {
 }
 
 model EventRound {
-  id Int @id @default(autoincrement())
-
-  event   ShootEvent @relation(fields: [eventId], references: [id])
-  eventId Int
-  team    TeamScore  @relation(fields: [teamId], references: [id])
-  teamId  Int
-
+  id            Int        @id @default(autoincrement())
+  eventId       Int
+  teamId        Int
   roundName     String
   roundIndex    Int
   roundStations Int
   roundAmmo     String
   roundClays    String
   roundState    String
+  event         ShootEvent @relation(fields: [eventId], references: [id])
+  team          TeamScore  @relation(fields: [teamId], references: [id])
 }
 
 model TeamScore {
-  id Int @id @default(autoincrement())
-
-  event   ShootEvent @relation(fields: [eventId], references: [id])
-  eventId Int
-
+  id             Int          @id @default(autoincrement())
+  eventId        Int
   teamName       String
   teamShooter1   String
   teamShooter2   String
   teamState      String
-  teamScores     EventRound[]
   teamTotal      Int?         @default(0)
   teamShotsFired Int?         @default(0)
+  teamScores     EventRound[]
+  event          ShootEvent   @relation(fields: [eventId], references: [id])
 }
