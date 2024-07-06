@@ -1,22 +1,12 @@
 <script lang="ts">
-    import { DataHandler } from '@vincjo/datatables'
     import type { PageData } from './$types';
     import { enhance } from '$app/forms';
-
+    import DataTable from '$lib/components/DataTable.svelte';
     let inputName: string;
     let inputSpeed: number;
     export let data: PageData;
-
-    const handler = new DataHandler(data.dbSlides, { rowsPerPage: 50 })
-    
-    $: data.dbSlides, handler.setRows(data.dbSlides)
-    $: rows = handler.getRows()
-
 </script>
 
-<!-- {#await data}
-    <p>loading ...</p>
-{:then data} -->
     <form method="POST" action="?/submitSpeed" use:enhance>
         <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div class="p-3">
@@ -45,29 +35,7 @@
         </div>
     </form>
     <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
-        <table>
-            <thead>
-                <tr>
-                    <th>TimeStamp</th>
-                    <th>Slider</th>
-                    <th>Speed (FPS)</th>
-                    <th>Speed (MPH)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {#each $rows as row}
-                    <tr>
-                        <td>{row.timeStamp}</td>
-                        <td>{row.sliderName}</td>
-                        <td>{row.sliderFPS}</td>
-                        <td>{row.sliderMPH}</td>
-                    </tr>
-                {/each}
-            </tbody>
-        </table>
+       <DataTable myData={data.dbSlides} ></DataTable>
     </div>
-            
-<!-- {:catch error}
-    <p>something went wrong ...</p>
-{/await} -->
+    
 
