@@ -34,8 +34,11 @@
             </div>
         </div>
     </form>
-    <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
-       <DataTable myData={data.dbSlides} ></DataTable>
+    <div class="flex-col my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
+       <!-- <DataTable myData={data.dbSlides} ></DataTable> -->
+        {#each data.dbSlides as row}
+            <div>{row.timeStamp}</div>
+        {/each}
     </div>
     
 
