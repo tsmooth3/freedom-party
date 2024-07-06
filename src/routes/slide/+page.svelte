@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { Table, tableMapperValues } from '@skeletonlabs/skeleton';
-    import type { TableSource } from '@skeletonlabs/skeleton';
+    import { DataHandler } from '@vincjo/datatables'
     import type { PageData } from './$types';
     import { enhance } from '$app/forms';
 
@@ -8,11 +7,17 @@
     let inputSpeed: number;
     export let data: PageData;
 
+    const handler = new DataHandler(data.dbSlides, { rowsPerPage: 50 })
+    const rows = handler.getRows()
+
+    $: handler.setRows(data.dbSlides)
+
+
 </script>
 
-{#await data.dbSlides}
+{#await data}
     <p>loading ...</p>
-{:then slideData}
+{:then data}
     <form method="POST" action="?/submitSpeed" use:enhance>
         <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div class="p-3">
@@ -41,10 +46,26 @@
         </div>
     </form>
     <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
-        <Table source={{
-            head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
-            body: tableMapperValues(slideData, ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
-    }} interactive={true} regionHeadCell="text-right" regionCell="text-right"/>
+        <table>
+            <thead>
+                <tr>
+                    <th>TimeStamp</th>
+                    <th>Slider</th>
+                    <th>Speed (FPS)</th>
+                    <th>Speed (MPH)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {#each $rows as row}
+                    <tr>
+                        <td>{row.timeStamp}</td>
+                        <td>{row.sliderName}</td>
+                        <td>{row.sliderFPS}</td>
+                        <td>{row.sliderMPH}</td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
     </div>
             
 {:catch error}
