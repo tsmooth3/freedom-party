@@ -6,8 +6,8 @@
     let inputName: string;
     let inputSpeed: number;
     export let data: PageData;
-    let slides: prismaSlide[] = data?.dbSlides;
-    $: slides = data?.dbSlides;
+    let slides: prismaSlide[] = data.dbSlides;
+    $: slides = data.dbSlides;
 </script>
 
     <form method="POST" action="?/submitSpeed" use:enhance>
@@ -40,6 +40,11 @@
     {#await data}
         <p>loading...</p>
     {:then items} 
+    <pre>
+        {#each items.dbSlides as slide}
+            <pre>{slide}</pre>
+        {/each}
+    </pre>
     <div class="flex">
         <div class="flex-col my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div>TimeStamp</div>
