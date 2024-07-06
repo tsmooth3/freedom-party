@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-        {#each $rows as row}
+        {#each myData as row}
             <tr>
                 <td>{row.timeStamp}</td>
                 <td>{row.sliderName}</td>
