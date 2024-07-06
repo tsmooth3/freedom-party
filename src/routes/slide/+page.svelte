@@ -8,21 +8,11 @@
     let inputSpeed: number;
     export let data: PageData;
 
-
-    let tableSimple: TableSource = {
-        head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
-        body: tableMapperValues([], []),
-    }
-
-    $: tableSimple = {
-            head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
-            body: tableMapperValues(data.dbSlides, ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
-    };
 </script>
 
 {#await data.dbSlides}
     <p>loading ...</p>
-{:then data}
+{:then slideData}
     <form method="POST" action="?/submitSpeed" use:enhance>
         <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div class="p-3">
@@ -51,7 +41,10 @@
         </div>
     </form>
     <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
-        <Table source={tableSimple} interactive={true} regionHeadCell="text-right" regionCell="text-right"/>
+        <Table source={{
+            head: ['TimeStamp', 'Slider', 'Speed (FPS)', 'Speed (MPH)'],
+            body: tableMapperValues(slideData, ['timeStamp', 'sliderName', 'sliderFPS', 'sliderMPH']),
+    }} interactive={true} regionHeadCell="text-right" regionCell="text-right"/>
     </div>
             
 {:catch error}
