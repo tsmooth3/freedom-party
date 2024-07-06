@@ -1,3 +1,5 @@
+import type { Decimal } from "@prisma/client/runtime/library"
+
 export type EventState = "NEW" | "ACTIVE" | "ONDECK" | "IDLE" | "COMPLETE"
 export type fSTATE = "CREATE" | "ROUNDS" | "TEAMS" | "SUMMARY" | "COMPLETE"
 export type ShootEvent = {
@@ -64,5 +66,5 @@ export type prismaSlide = {
     timeStamp: Date
     sliderName: string
     sliderFPS: number
-    sliderMPH: string
+    sliderMPH: Decimal
 }

@@ -3,7 +3,7 @@ import prisma from '$lib/server/prisma';
 import type { RequestHandler } from './$types';
 
 
-export let GET: RequestHandler = async ({ url }) => {
+export let GET: RequestHandler = async ({ }) => {
     try {
         const slides = await prisma.slides.findMany({
             orderBy: [

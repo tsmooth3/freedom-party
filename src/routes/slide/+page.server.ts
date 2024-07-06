@@ -1,13 +1,5 @@
-import type { PageServerLoad } from "./$types";
 import type { Actions } from "@sveltejs/kit";
-import type { prismaSlide } from "$lib/shared/utils";
 import { invalidateAll } from "$app/navigation";
-
-export const load: PageServerLoad = async ({ fetch }) => {
-    const dbSlidesResponse = await fetch('/api/slides')
-    const dbSlides: prismaSlide[] = await dbSlidesResponse.json()
-    return { dbSlides }
-};
 
 export const actions: Actions = {
     submitSpeed: async ({ fetch, request }) => {

@@ -1,14 +1,12 @@
 <script lang="ts">
-    import { DataHandler } from '@vincjo/datatables';
     export let myData;
-    const handler = new DataHandler(myData, { rowsPerPage: 25 });
-    const rows = handler.getRows();
-    $: myData, handler.setRows(myData)
+    $: myData
 </script>
 
 <table>
     <thead>
         <tr>
+            <th>Rank</th>
             <th>TimeStamp</th>
             <th>Slider</th>
             <th>Speed (FPS)</th>
@@ -16,8 +14,9 @@
         </tr>
     </thead>
     <tbody>
-        {#each myData as row}
+        {#each myData as row, i (i)}
             <tr>
+                <td>{i+1}</td>
                 <td>{row.timeStamp}</td>
                 <td>{row.sliderName}</td>
                 <td>{row.sliderFPS}</td>
@@ -32,9 +31,12 @@
     thead {
         background: #777;
     }
+    thead th {
+        padding: 5px 10px;
+    }
     tbody td {
         border: 1px solid #f5f5f5;
-        padding: 4px 20px;
+        padding: 5px 10px;
     }
     tbody tr {
         transition: all, 0.2s;
