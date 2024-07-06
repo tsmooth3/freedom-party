@@ -8,16 +8,15 @@
     export let data: PageData;
 
     const handler = new DataHandler(data.dbSlides, { rowsPerPage: 50 })
-    const rows = handler.getRows()
-
-    $: handler.setRows(data.dbSlides)
-
+    
+    $: data.dbSlides, handler.setRows(data.dbSlides)
+    $: rows = handler.getRows()
 
 </script>
 
-{#await data}
+<!-- {#await data}
     <p>loading ...</p>
-{:then data}
+{:then data} -->
     <form method="POST" action="?/submitSpeed" use:enhance>
         <div class="flex my-auto p-5 min-w-[390px] max-w-6xl mx-auto">
             <div class="p-3">
@@ -68,7 +67,7 @@
         </table>
     </div>
             
-{:catch error}
+<!-- {:catch error}
     <p>something went wrong ...</p>
-{/await}
+{/await} -->
 
