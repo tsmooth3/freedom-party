@@ -32,6 +32,14 @@
 		])
 	};
 
+	$: totalEventClays = $thisEvent.eventFormat.reduce((total, round) => {
+		return total + (round.roundClays?.length || 0);
+	}, 0);
+
+	$: totalEventAmmo = $thisEvent.eventFormat.reduce((total, round) => {
+		return total + (round.roundAmmo?.length || 0);
+	}, 0);
+
 	// report pair = '--'
 	// report triple = '---'
 	// true triple = '---'
@@ -241,7 +249,21 @@
 			Specify number of stations and clays and click + Add Round. When finished click next to configure
 			Teams
 			<div class="flex-1 card p-5 m-5">
-				<span class="h3">Event Format</span>
+				<div class="flex items-center justify-between mb-3">
+					<span class="h3">Event Format</span>
+					{#if $thisEvent.eventFormat.length > 0}
+						<div class="flex items-center gap-4">
+							<div class="flex items-center gap-1">
+								<img class="w-5" src={clay} alt="clay" />
+								<span class="h4">{totalEventClays}</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<img class="w-3" src={shell} alt="shell" />
+								<span class="h4">{totalEventAmmo}</span>
+							</div>
+						</div>
+					{/if}
+				</div>
 				<label class="label">
 					<span>Round Name</span>
 					<input class="input" type="text" name="roundName" bind:value={inputRoundName} />
@@ -272,7 +294,26 @@
 						>🔙 Undo</button
 					>
 				</div>
-				<div class="flex m-1 p-1" />
+				<div class="flex m-1 p-1"></div>
+
+				{#if inputRoundStation.length > 0}
+					<div class="flex-1 card m-3 p-3 variant-ringed-primary">
+						<span class="h4">Round Builder: {inputRoundName}</span>
+						<div class="flex flex-wrap justify-around">
+							{#each inputRoundStation as s}
+								<div class="flex-1 card m-3 p-3">
+									<span class="h5">{s.presentationName}</span>
+									<div class="flex flex-wrap my-0 mx-2 justify-center">
+										<img class="w-5" src={clay} alt="clay" />x{s.stationClays.length}
+									</div>
+									<div class="flex flex-wrap m-2 p-2 justify-center">
+										<img class="w-3" src={shell} alt="shell" />x{s.stationAmmo.length}
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
 
 				<div class="flex flex-wrap justify-around">
 					{#each $thisEvent.eventFormat as r}
@@ -353,10 +394,4 @@
 			<Table source={teamTable} />
 		</Step>
 	</Stepper>
-	<div>
-		<!-- <pre>
-			{JSON.stringify($thisEvent, null, 3)}
-			{JSON.stringify(inputRoundStation, null, 3)}
-		</pre> -->
-	</div>
 </div>
