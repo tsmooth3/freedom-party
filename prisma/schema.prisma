@@ -19,17 +19,30 @@ model ShootEvent {
 }
 
 model EventRound {
-  id            Int        @id @default(autoincrement())
-  eventId       Int
-  teamId        Int
-  roundName     String
-  roundIndex    Int
-  roundStations Int
-  roundAmmo     String
-  roundClays    String
-  roundState    String
-  event         ShootEvent @relation(fields: [eventId], references: [id])
-  team          TeamScore  @relation(fields: [teamId], references: [id])
+  id                  Int        @id @default(autoincrement())
+  eventId             Int
+  teamId              Int
+  roundName           String
+  roundIndex          Int
+  roundStations       Int
+  roundAmmo           String
+  roundClays          String
+  roundState          String
+  roundStationFormat  RoundStation[]
+  event               ShootEvent @relation(fields: [eventId], references: [id])
+  team                TeamScore  @relation(fields: [teamId], references: [id])
+}
+model RoundStation {
+  id                Int        @id @default(autoincrement())
+  roundId           Int
+  teamId            Int
+  eventId           Int
+  stationIndex      Int
+  presentationName  String
+  stationAmmo       String
+  stationClays      String
+  stationState      String
+  round             EventRound @relation(fields: [roundId], references: [id])
 }
 
 model TeamScore {

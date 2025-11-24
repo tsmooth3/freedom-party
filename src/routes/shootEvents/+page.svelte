@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { Step, Stepper, tableMapperValues, Table } from '@skeletonlabs/skeleton';
 	import { thisEvent, resetShootEvent } from '$lib/client/localStoragedb';
+	import type { RoundStation } from '$lib/shared/utils';
 	import shell from '$lib/images/shell.svg';
 	import clay from '$lib/images/capshield.svg';
 	import { goto } from '$app/navigation';
 
-	let inputStations = 3;
-	let inputClays = 2;
-	let inputAmmo = 4;
+	let inputRoundStation : RoundStation[] = [];
 	let inputRoundName = 'Round' + ($thisEvent.eventFormat.length + 1);
 	let inputTeamName = getRandomTeamName();
 	let inputS1 = 'Player 1';
@@ -33,7 +32,62 @@
 		])
 	};
 
+	// report pair = '--'
+	// report triple = '---'
+	// true triple = '---'
+	// true report pair = '----'
+	function addReportPair() {
+		inputRoundStation = [
+			...inputRoundStation,{
+				stationId: inputRoundStation.length + 1,
+				presentationName: 'Report Pair',
+				stationAmmo: '----',
+				stationClays: '--',
+				stationState: 'NEW'
+			}
+		];
+	}
+	function addReportTriple() {
+		inputRoundStation = [
+			...inputRoundStation,{
+				stationId: inputRoundStation.length + 1,
+				presentationName: 'Report Triple',
+				stationAmmo: '----',
+				stationClays: '---',
+				stationState: 'NEW'
+			}
+		];
+	}
+	function addTrueTriple() {
+		inputRoundStation = [
+			...inputRoundStation,{
+				stationId: inputRoundStation.length + 1,
+				presentationName: 'True Triple',
+				stationAmmo: '----',
+				stationClays: '---',
+				stationState: 'NEW'
+			}
+		];
+	}
+	function addTrueReportPair() {
+		inputRoundStation = [
+			...inputRoundStation,{
+				stationId: inputRoundStation.length + 1,
+				presentationName: 'True Report Pair',
+				stationAmmo: '----',
+				stationClays: '----',
+				stationState: 'NEW'
+			}
+		];
+	}
+
 	function addRound() {
+		if (inputRoundStation.length === 0) {
+			alert('Please add at least one station to the round');
+			return;
+		}
+		let stationClays = inputRoundStation.map((station) => station.stationClays).join('');
+		let stationAmmo = inputRoundStation.map((station) => station.stationAmmo).join('');
 		if (inputRoundName.trim().length === 0)
 			inputRoundName = 'Round' + ($thisEvent.eventFormat.length + 1);
 		$thisEvent.eventFormat = [
@@ -41,11 +95,12 @@
 			{
 				roundId: $thisEvent.eventFormat.length + 1,
 				roundName: inputRoundName,
-				roundAmmo: '-'.repeat(inputStations * inputAmmo),
-				roundClays: '-'.repeat(inputStations * inputClays),
-				roundAmmoNum: String(inputStations * inputAmmo),
-				roundClaysNum: String(inputStations * inputClays),
-				roundStations: inputStations,
+				roundAmmo: stationAmmo,
+				roundClays: stationClays,
+				roundAmmoNum: String(stationAmmo.length),
+				roundClaysNum: String(stationClays.length),
+				roundStations: inputRoundStation.length,
+				roundStationFormat: inputRoundStation,
 				roundState: 'NEW'
 			}
 		];
@@ -53,6 +108,7 @@
 			team.teamScores = $thisEvent.eventFormat;
 		});
 		inputRoundName = 'Round' + ($thisEvent.eventFormat.length + 1);
+		inputRoundStation = [];
 	}
 	function undoRound() {
 		$thisEvent.eventFormat = $thisEvent.eventFormat.filter(
@@ -175,7 +231,13 @@
 			<p class="my-2">Click Next to create a new Event with default settings.</p>
 		</Step>
 		<Step>
-			<svelte:fragment slot="header">Add Round Format</svelte:fragment>
+			<svelte:fragment slot="header">Add Round
+				<div class="flex justify-end">
+					<button type="button" class="btn variant-filled-warning" on:click={resetStepper}
+						>Reset</button
+					>
+				</div>
+			</svelte:fragment>
 			Specify number of stations and clays and click + Add Round. When finished click next to configure
 			Teams
 			<div class="flex-1 card p-5 m-5">
@@ -184,54 +246,23 @@
 					<span>Round Name</span>
 					<input class="input" type="text" name="roundName" bind:value={inputRoundName} />
 				</label>
-				<div class="flex m-2 p-2">
-					<!-- svelte-ignore a11y-label-has-associated-control -->
-					<label class="flex-1 justify-around">
-						<span class="chip"># of Stations</span>
-					</label>
-					<!-- svelte-ignore a11y-label-has-associated-control -->
-					<label class="flex-1 justify-around">
-						<span class="chip">Clays per Station</span>
-					</label>
-					<!-- svelte-ignore a11y-label-has-associated-control -->
+
+				
+				<div class="flex m-1 p-1 justify-end">
+					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addReportPair}
+					>Report Pair</button
+					>
+					<button type="button" class="flex mx-1 btn variant-ghost-tertiary" on:click={addReportTriple}
+					>Report Triple</button
+					>
+					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addTrueTriple}
+						>True Triple</button
+					>
 				</div>
-				<div class="flex m-2 p-2">
-					<div class="flex-1 px-3 justify-around">
-						<input
-							class="input"
-							type="number"
-							name="roundStations"
-							bind:value={inputStations}
-							min="1"
-							max="6"
-						/>
-					</div>
-					<div class="flex-1 px-3 justify-around">
-						<input
-							class="input"
-							type="number"
-							name="roundClays"
-							bind:value={inputClays}
-							min="2"
-							max="6"
-						/>
-					</div>
-				</div>
-				<div class="flex m-2 p-2">
-					<input
-						class="input flex-1 px-5 mx-5"
-						type="range"
-						bind:value={inputStations}
-						min="1"
-						max="6"
-					/>
-					<input
-						class="input flex-1 px-5 mx-5"
-						type="range"
-						bind:value={inputClays}
-						min="2"
-						max="6"
-					/>
+				<div class="flex m-1 p-1 justify-end">
+					<button type="button" class="flex mx-1 btn variant-ghost-tertiary" on:click={addTrueReportPair}
+						>True Report Pair</button
+					>
 				</div>
 				<div class="flex m-1 p-1 justify-end">
 					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addRound}
@@ -247,11 +278,18 @@
 					{#each $thisEvent.eventFormat as r}
 						<div class="flex-1 card m-3 p-3">
 							<span class="h4">{r.roundName}</span>
-							<div class="flex flex-wrap my-0 mx-2 justify-center">
-								<img class="w-5" src={clay} alt="clay" />x{r.roundClays.length}
-							</div>
-							<div class="flex flex-wrap m-2 p-2 justify-center">
-								<img class="w-3" src={shell} alt="shell" />x{r.roundAmmo.length}
+							<div class="flex flex-wrap justify-around">
+								{#each r.roundStationFormat as s}
+									<div class="flex-1 card m-3 p-3">
+										<span class="h5">{s.presentationName}</span>
+										<div class="flex flex-wrap my-0 mx-2 justify-center">
+											<img class="w-5" src={clay} alt="clay" />x{s.stationClays.length}
+										</div>
+										<div class="flex flex-wrap m-2 p-2 justify-center">
+											<img class="w-3" src={shell} alt="shell" />x{s.stationAmmo.length}
+										</div>
+									</div>
+								{/each}
 							</div>
 						</div>
 					{/each}
@@ -315,4 +353,10 @@
 			<Table source={teamTable} />
 		</Step>
 	</Stepper>
+	<div>
+		<!-- <pre>
+			{JSON.stringify($thisEvent, null, 3)}
+			{JSON.stringify(inputRoundStation, null, 3)}
+		</pre> -->
+	</div>
 </div>

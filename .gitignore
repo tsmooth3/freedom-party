@@ -14,3 +14,5 @@ prisma/dev.db
 prisma/dev.db
 ecosystem.config.cjs
 prisma/prisma/fp.db
+update.dump
+generate_station_inserts.ts

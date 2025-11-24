@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { prismaShootEvent, prismaTeamScore } from "$lib/shared/utils";
+	import WatchCard from './WatchCard.svelte';
+	import type { prismaShootEvent, prismaTeamScore, prismaEventRound } from "$lib/shared/utils";
 	import LegendCompact from "./LegendCompact.svelte";
     export let dbShootEvent: prismaShootEvent;
     export let eventWinner: prismaTeamScore;
@@ -16,6 +17,7 @@
 	const formattedDate = formatter.format(inputDate);
     export let shootingTeamName: string;
     export let onDeckTeamName: string;
+    export let sRound: prismaEventRound | undefined;
     let totalClays: number;
     $: winnerAmmoAccuracy = 0;
     $: winnerClayAccuracy = 0;
@@ -32,17 +34,25 @@
         winnerClayAccuracy = Math.round((eventWinner.teamTotal / totalClays) * 100);
         winnerAmmoAccuracy = Math.round((eventWinner.teamTotal / eventWinner.teamShotsFired) * 100);
     }
+    $: shootingTeamRoundName = sRound?.roundName ?? '';
+    $: shootingTeamPresentationName = sRound?.roundStationFormat?.[0]?.presentationName ?? '';
+    $: stationAmmos = sRound?.roundStationFormat?.[0]?.stationAmmo ?? '';
+    $: stationClays = sRound?.roundStationFormat?.[0]?.stationClays ?? '';
+    $: allStations = sRound?.roundStationFormat?.map(s => s.presentationName + ',' + s.stationClays + ',' + s.stationAmmo).join('|') ?? '';
 
 </script>
+<div class="h3 text-center mx-auto my-auto min-w-[300px] max-w-[550px]">{eventName.replaceAll("_"," ") + " : " +formattedDate}</div>
 <div class="flex m-2 justify-around">
     <div class="flex flex-wrap">
-        
-        <div class="flex m-auto">
-            <div class="flex-col mx-auto my-auto min-w-[300px] max-w-[350px]">
-                <div class="h2 text-center">{eventName.replaceAll("_"," ")}</div>
-                <div class="h3 text-center">{formattedDate}</div>
+        {#if sRound}
+            <div class="my-2 mx-5">
+                <WatchCard
+                    roundName={shootingTeamRoundName}
+                    presentationName={shootingTeamPresentationName}
+                    allStations={allStations}
+                />
             </div>
-        </div>
+        {/if}
 
         <div class="flex m-auto">
             <div class="flex min-w-[350px] max-w-[800px] px-1 mx-auto my-1">
@@ -71,9 +81,9 @@
             </div>
         </div>
 
-        <div class="flex m-auto">
-            <LegendCompact/>
-        </div>
-
+        
     </div>
+</div>
+<div class="flex m-auto">
+    <LegendCompact/>
 </div>

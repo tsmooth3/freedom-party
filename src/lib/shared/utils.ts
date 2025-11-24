@@ -19,6 +19,14 @@ export type EventRound = {
     roundAmmoNum: string
     roundClaysNum: string
     roundState: EventState
+    roundStationFormat: RoundStation[]
+}
+export type RoundStation = {
+    stationId: number
+    presentationName: string
+    stationAmmo: string
+    stationClays: string
+    stationState: EventState
 }
 export type TeamScore = {
     teamId: number
@@ -59,6 +67,19 @@ export type prismaEventRound = {
     roundAmmo: string
     roundClays: string
     roundState: EventState
+    roundStationFormat: prismaRoundStation[]
+}
+
+export type prismaRoundStation = {
+    id: number
+    roundId: number
+    teamId: number
+    eventId: number
+    stationIndex: number
+    presentationName: string
+    stationAmmo: string
+    stationClays: string
+    stationState: EventState
 }
 
 export type prismaSlide = {

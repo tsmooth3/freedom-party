@@ -1,5 +1,5 @@
 import type { PageServerLoad } from "../$types";
-import type { prismaEventRound, prismaShootEvent, prismaTeamScore } from "$lib/shared/utils";
+import type { prismaEventRound, prismaShootEvent} from "$lib/shared/utils";
 import type { Actions } from "@sveltejs/kit";
 import { invalidateAll } from "$app/navigation";
 
@@ -23,55 +23,6 @@ export const actions: Actions = {
         await fetch('/api/activate/' + eventId)
         // set teamId to ACTIVE
         await fetch('/api/activate/' + eventId + '/team/' + teamId)
-        return { success: true }
-    },
-    shot: async ({ fetch, request }) => {
-        const formData = await request.formData()
-        const teamId = Number(formData.get('teamId'))
-        const teamScoreId = Number(formData.get('teamScoreId'))
-        let teamTotal = Number(formData.get('teamTotal'))
-        let teamShotsFired = Number(formData.get('teamShotsFired'))
-        let ammo = String(formData.get('roundAmmo'))
-        let clays = String(formData.get('roundClays'))
-        ammo = ammo.replace('-', 'x')
-        teamShotsFired++
-        if (!ammo.includes('-')) {
-            clays = clays.replaceAll('-', 'o')
-        }
-        await fetch('/api/score/round/' + teamScoreId + '?roundAmmo=' + ammo + '&roundClays=' + clays)
-        await fetch('/api/score/team/' + teamId + '?teamTotal=' + teamTotal + '&teamShotsFired=' + teamShotsFired)
-        return { success: true }
-    },
-    kill: async ({ fetch, request }) => {
-        const formData = await request.formData()
-        const teamId = Number(formData.get('teamId'))
-        const teamScoreId = Number(formData.get('teamScoreId'))
-        let teamTotal = Number(formData.get('teamTotal'))
-        let teamShotsFired = Number(formData.get('teamShotsFired'))
-        let ammo = String(formData.get('roundAmmo'))
-        let clays = String(formData.get('roundClays'))
-        ammo = ammo.replace('-', 'x')
-        teamShotsFired++
-        clays = clays.replace('-', 'x')
-        teamTotal++
-        if (!ammo.includes('-')) {
-            clays = clays.replaceAll('-', 'o')
-        }
-        await fetch('/api/score/round/' + teamScoreId + '?roundAmmo=' + ammo + '&roundClays=' + clays)
-        await fetch('/api/score/team/' + teamId + '?teamTotal=' + teamTotal + '&teamShotsFired=' + teamShotsFired)
-        return { success: true }
-    },
-    lost: async ({ fetch, request }) => {
-        const formData = await request.formData()
-        const teamId = Number(formData.get('teamId'))
-        const teamScoreId = Number(formData.get('teamScoreId'))
-        let teamTotal = Number(formData.get('teamTotal'))
-        let teamShotsFired = Number(formData.get('teamShotsFired'))
-        let ammo = String(formData.get('roundAmmo'))
-        let clays = String(formData.get('roundClays'))
-        clays = clays.replace('-', 'o')
-        await fetch('/api/score/round/' + teamScoreId + '?roundAmmo=' + ammo + '&roundClays=' + clays)
-        await fetch('/api/score/team/' + teamId + '?teamTotal=' + teamTotal + '&teamShotsFired=' + teamShotsFired)
         return { success: true }
     },
     undo: async ({ fetch, request }) => {
@@ -109,6 +60,32 @@ export const actions: Actions = {
             await fetch('/api/idle/' + eventId + '/team/' + teamId)
             // set onDeckTeam to ACTIVE
             await fetch('/api/activate/' + eventId + '/team/' + teamId2)
+        }
+        invalidateAll
+        return { success: true }
+    },
+    submitStation: async ({ fetch, request }) => {
+        const formData = await request.formData()
+        const teamId = Number(formData.get('teamId'))
+        const stationId = Number(formData.get('roundStationId'))
+        const completeRound = formData.get('completeRound')
+        const roundId = Number(formData.get('roundId'))
+        const eventId = Number(formData.get('eventId'))
+
+        //score round
+        let teamTotal = Number(formData.get('teamTotal'))
+        let teamShotsFired = Number(formData.get('teamShotsFired'))
+        let ammo = String(formData.get('stationAmmo'))
+        let clays = String(formData.get('stationClays'))
+        let roundAmmo = String(formData.get('roundAmmo')) + ammo
+        let roundClays = String(formData.get('roundClays')) + clays
+
+        await fetch('/api/score/station/' + stationId + '?ammo=' + ammo + '&clays=' + clays)
+        await fetch('/api/score/round/' + roundId + '?roundAmmo=' + roundAmmo + '&roundClays=' + roundClays)
+        await fetch('/api/score/team/' + teamId + '?teamTotal=' + teamTotal + '&teamShotsFired=' + teamShotsFired)
+        // set round to complete
+        if (completeRound === 'true') {
+            await fetch('/api/complete/' + eventId + '/round/' + roundId)
         }
         invalidateAll
         return { success: true }

@@ -14,7 +14,7 @@
 	$: allRoundsComplete = false;
 	$: onDeckTeamName = 'n/a';
 	$: scoringDisabled = false;
-	$: shootingIndex = eventRounds.findLastIndex((p) => p.roundState === 'COMPLETE');
+	$: shootingIndex = eventRounds.findIndex((p) => p.roundState !== 'COMPLETE');
 	$: shootingTeamId = eventRounds[0].teamId;
 	$: shootingTeamName = shootEvent.eventTeamScores[0].teamName;
 	$: shootingTeamTotal = 0;
@@ -27,8 +27,11 @@
 	$: eventWinner = shootEvent.eventTeamScores[0];
 	$: winnerClayAccuracy = 0;
 	$: winnerAmmoAccuracy = 0;
-
-	$: if (shootingIndex + 1 === roundLen) {
+	$: sRound = eventRounds[shootingIndex];
+	$: pRound = eventRounds[shootingIndex - 1];
+	$: oRound = eventRounds[shootingIndex + 1];
+	
+	$: if (shootingIndex === -1) {
 		allRoundsComplete = true;
 		onDeckTeamName = 'All Rounds Complete';
 		shootingTeamId = shootEvent.eventTeamScores[0].teamId
@@ -40,18 +43,21 @@
 		scoringDisabled = true;
 	} else {
 		allRoundsComplete = false;
-		let sRound = eventRounds[shootingIndex + 1];
-		if (shootingIndex + 2 === roundLen) {
+		sRound = eventRounds[shootingIndex];
+		if (shootingIndex + 1 === roundLen) {
 			onDeckTeamName = 'Final Round';
 			onDeckTeamId = -1;
 		} else {
-			let oRound = eventRounds[shootingIndex + 2];
+			oRound = eventRounds[shootingIndex + 1];
 			if (oRound !== undefined) {
 				onDeckTeamId = oRound.teamId;
 			}
 			let oTeam = shootEvent.eventTeamScores.find((x) => x.id === onDeckTeamId);
 			if (oTeam !== undefined) onDeckTeamName = oTeam.teamName + ' | ' + oTeam.teamShooter1 + ' - ' + oTeam.teamShooter2;
 		}
+		if (shootingIndex > 0) {
+			pRound = eventRounds[shootingIndex - 1];
+		} 
 		if (sRound !== undefined) {
 			shootingTeamId = sRound.teamId;
 			let sTeam = shootEvent.eventTeamScores.find((x) => x.id === shootingTeamId);
@@ -106,7 +112,7 @@
 		}
 	}
 </script>
-<EventHeading dbShootEvent={shootEvent} shootingTeamName={shootingTeamName} onDeckTeamName={onDeckTeamName} eventWinner={eventWinner}/>
+<EventHeading dbShootEvent={shootEvent} sRound={sRound} shootingTeamName={shootingTeamName} onDeckTeamName={onDeckTeamName} eventWinner={eventWinner}/>
 <div class="flex-col my-auto min-w-[390px]">
     {#each shootEvent.eventTeamScores as ets}
         {#if screenSize > 1365}
