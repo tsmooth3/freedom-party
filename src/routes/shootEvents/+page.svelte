@@ -34,10 +34,14 @@
 
 	$: totalEventClays = $thisEvent.eventFormat.reduce((total, round) => {
 		return total + (round.roundClays?.length || 0);
+	}, 0) + inputRoundStation.reduce((total, station) => {
+		return total + (station.stationClays?.length || 0);
 	}, 0);
 
 	$: totalEventAmmo = $thisEvent.eventFormat.reduce((total, round) => {
 		return total + (round.roundAmmo?.length || 0);
+	}, 0) + inputRoundStation.reduce((total, station) => {
+		return total + (station.stationAmmo?.length || 0);
 	}, 0);
 
 	// report pair = '--'
@@ -119,13 +123,18 @@
 		inputRoundStation = [];
 	}
 	function undoRound() {
-		$thisEvent.eventFormat = $thisEvent.eventFormat.filter(
-			(round, roundIndex) => roundIndex !== $thisEvent.eventFormat.length - 1
-		);
-		$thisEvent.eventTeamScores.forEach((team) => {
-			team.teamScores = $thisEvent.eventFormat;
-		});
-		inputRoundName = 'Round' + ($thisEvent.eventFormat.length + 1);
+		if (inputRoundStation.length === 0) {
+			$thisEvent.eventFormat = $thisEvent.eventFormat.filter(
+				(round, roundIndex) => roundIndex !== $thisEvent.eventFormat.length - 1
+			);
+			$thisEvent.eventTeamScores.forEach((team) => {
+				team.teamScores = $thisEvent.eventFormat;
+			});
+			inputRoundName = 'Round' + ($thisEvent.eventFormat.length + 1);
+			return;
+		} else {
+			inputRoundStation = [];
+		}
 	}
 	function addTeam() {
 		$thisEvent.eventTeamScores = [
@@ -271,26 +280,26 @@
 
 				
 				<div class="flex m-1 p-1 justify-end">
-					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addReportPair}
+					<button type="button" class="flex mx-1 btn variant-ghost-primary" on:click={addReportPair}
 					>Report Pair</button
 					>
-					<button type="button" class="flex mx-1 btn variant-ghost-tertiary" on:click={addReportTriple}
+					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addReportTriple}
 					>Report Triple</button
-					>
-					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addTrueTriple}
-						>True Triple</button
 					>
 				</div>
 				<div class="flex m-1 p-1 justify-end">
+					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addTrueTriple}
+						>True Triple</button
+					>
 					<button type="button" class="flex mx-1 btn variant-ghost-tertiary" on:click={addTrueReportPair}
 						>True Report Pair</button
 					>
 				</div>
 				<div class="flex m-1 p-1 justify-end">
-					<button type="button" class="flex mx-1 btn variant-ghost-secondary" on:click={addRound}
+					<button type="button" class="flex mx-1 btn variant-ghost-success" on:click={addRound}
 						>+ Round</button
 					>
-					<button type="button" class="flex mx-1 btn variant-ghost-tertiary" on:click={undoRound}
+					<button type="button" class="flex mx-1 btn variant-ghost-warning" on:click={undoRound}
 						>🔙 Undo</button
 					>
 				</div>
