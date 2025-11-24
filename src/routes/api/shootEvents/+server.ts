@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
-import type { TeamScore, EventRound } from '$lib/shared/utils';
+import type { TeamScore, EventRound, RoundStation } from '$lib/shared/utils';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -114,7 +114,7 @@ export const POST: RequestHandler = async ({ request }) => {
                 let roundAmmo = round.roundAmmo
                 let roundClays = round.roundClays
                 let roundState = round.roundState
-                await prisma.eventRound.create({
+                const newRound = await prisma.eventRound.create({
                     data: {
                         eventId,
                         teamId,
@@ -126,7 +126,29 @@ export const POST: RequestHandler = async ({ request }) => {
                         roundState
                     }
                 })
+                let roundId = await newRound.id
+                await round.roundStationFormat.forEach(async (station: RoundStation) => {
+                    let stationIndex = station.stationId
+                    let presentationName = station.presentationName
+                    let stationAmmo = station.stationAmmo
+                    let stationClays = station.stationClays
+                    let stationState = station.stationState 
+                    await prisma.roundStation.create({
+                        data: {
+                            roundId,
+                            teamId,
+                            eventId,
+                            stationIndex,
+                            presentationName,
+                            stationAmmo,
+                            stationClays,
+                            stationState
+                        }
+                    })
+                })
+            
             })
+    
         });
         return await json({ success: true, eventId: eventId });
     } catch (err) {

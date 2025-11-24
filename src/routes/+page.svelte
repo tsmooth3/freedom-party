@@ -88,11 +88,11 @@
 		colors: ['#ff3e00', '#40b3ff', '#676778'],
 		destroyAfterDone: true
 	}}
-/>
+></div>
 {/if}
 {#if daysToFreedom === 0}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" onclick={handleClick} onkeypress={undefined}>
 			<h1 class="h1">LET'S PARTY!</h1>
 			<h2 class="h2">Freedom Party is Today!</h2>
 			<h4 class="h4">{partyDay.toDateString()}</h4>
@@ -107,24 +107,24 @@
 			stageHeight: window.innerHeight,
 			colors: ['#ff3e00', '#40b3ff', '#e3e3e3']
 		}}
-	/>
+	></div>
 {:else}
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" onclick={handleClick} onkeypress={undefined}>
 			<h3 class="h3">{daysSinceFreedom} Days Since Last Freedom Party!</h3>
 			<h4 class="h4">{lastpartyDay.toDateString()}</h4>
 		</div> 
 	</div>
 
 	<div class="flex my-1 mx-auto min-w-[390px] max-w-6xl justify-center">
-		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+		<div role="button" aria-pressed="false" tabindex="0" class="flex-1 card card-hover m-3 p-5 text-center variant-outline-primary" onclick={handleClick} onkeypress={undefined}>
 			<h3 class="h3">{daysToFreedom} Days Until Next Freedom Party!</h3>
 			<h4 class="h4">{partyDay.toDateString()}</h4>
 		</div> 
 	</div>
 {/if}
 <div class="flex min-w-[390px] max-w-6xl my-auto mx-auto ">
-	<div role="button" aria-pressed="false" tabindex="0" class="card card-hover m-3 overflow-hidden variant-outline-primary" on:click={handleClick} on:keypress={undefined}>
+	<div role="button" aria-pressed="false" tabindex="0" class="card card-hover m-3 overflow-hidden variant-outline-primary" onclick={handleClick} onkeypress={undefined}>
 		<header>
 			<img src={flag} class="w-full" alt="Post" />
 		</header>

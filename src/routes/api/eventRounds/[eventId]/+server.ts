@@ -22,7 +22,14 @@ export const GET: RequestHandler = async ({ params }) => {
                 {
                     teamId: 'asc'
                 }
-            ]
+            ],
+            include: {
+                roundStationFormat: {
+                    orderBy: {
+                        stationIndex: 'asc'
+                    }
+                }
+            }
         })
         if (eventRounds.length > 0) return json(eventRounds)
         return json({ success: false, message: "no results for event: " + eventId })
