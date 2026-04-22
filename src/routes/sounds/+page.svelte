@@ -6,7 +6,7 @@
 	<div class=" flex-col m-4 p-4">
 		<div class="p-4">
 			Don't Touch Me - Brak
-			<audio controls src={donttouchme} />
+			<audio controls src={donttouchme}></audio>
 			<iframe
 				width={927 / 3}
 				height={695 / 3}
@@ -15,7 +15,7 @@
 				frameborder="0"
 				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 				allowfullscreen
-			/>
+			></iframe>
 		</div>
 	</div>
 </div>

@@ -20,7 +20,9 @@
 	let shootingIndex: number = 0;
 	let stationLen: number = 0;
 	let onDeckTeamId: number;
-	let completeRoundOnSubmit: boolean = false;
+	let lastStationSubmitted: boolean = false;
+	let isLastStation: boolean = false;
+	let lastSubmittedStationId: number;
 	
 	let eventName: String = data.dbShootEvents[0].eventName;
 	const options: Intl.DateTimeFormatOptions = {
@@ -60,7 +62,6 @@
 		roundIndex  = data.dbEventRounds.findIndex((p) => p.roundState === 'NEW' || p.roundState === 'ACTIVE');
 		// find the total number of rounds
 		roundLen = data.dbEventRounds.length;
-		completeRoundOnSubmit = false;
 	}
 	
 	$: if (roundIndex === -1) {
@@ -96,13 +97,20 @@
 
 		// find the first station that is not COMPLETE or has stationClays that match '-'
 		shootingIndex = sRound.roundStationFormat.findIndex((p) => p.stationState !== 'COMPLETE' || p.stationClays?.includes('-'));
+		
+		if (shootingIndex === -1) {
+			shootingIndex = sRound.roundStationFormat.length - 1;
+		}
 
 		stationLen = sRound.roundStationFormat.length;
 		shootingTeamStationId = sRound.roundStationFormat[shootingIndex].id;
 		shootingTeamPresentationName = sRound.roundStationFormat[shootingIndex].presentationName;
 		
-		if (shootingIndex === stationLen - 1){
-			completeRoundOnSubmit = true;
+		isLastStation = (shootingIndex === stationLen - 1);
+		
+		// Reset lastStationSubmitted if we move to a new station
+		if (shootingTeamStationId !== lastSubmittedStationId) {
+			lastStationSubmitted = false;
 		}
 		if (roundIndex === roundLen - 1) {
 			onDeckTeamName = 'Final Round';
@@ -126,8 +134,10 @@
 			shootingTeamRoundName = sRound.roundName;
 			roundAmmo = sRound.roundAmmo;
 			roundClays = sRound.roundClays;
-			$myStationClays = sRound.roundStationFormat[shootingIndex].stationClays;
-			$myStationAmmo = sRound.roundStationFormat[shootingIndex].stationAmmo;
+			if (shootingIndex !== -1 && sRound.roundStationFormat[shootingIndex]) {
+				$myStationClays = sRound.roundStationFormat[shootingIndex].stationClays;
+				$myStationAmmo = sRound.roundStationFormat[shootingIndex].stationAmmo;
+			}
 			$allStations = sRound.roundStationFormat.map(s => 
 				s.presentationName + ',' + s.stationClays + ',' + s.stationAmmo
 			).join('|');
@@ -282,6 +292,7 @@
 		$myStationClays = $myStationClays.replaceAll('x', '-').replaceAll('o', '-');
 		$myTeamShotsFired = shootingTeamShotsFired;
 		$myTeamTotal = shootingTeamTotal;
+		lastStationSubmitted = false;
 	}
 </script>
 
@@ -310,10 +321,26 @@
 		allStationClays: {$allStationClays}
 	</pre> -->
 	<div class="flex-1 my-auto min-w-[390px] justify-center">
-		<form method="POST" action="?/submitStation" use:enhance>
+		<form method="POST" action="?/submitStation" use:enhance={({ action }) => {
+			const isUndo = action.search.includes('undo');
+			return async ({ result, update }) => {
+				if (result.type === 'success') {
+					if (isUndo) {
+						lastStationSubmitted = false;
+					} else {
+						lastSubmittedStationId = shootingTeamStationId;
+						if (isLastStation) {
+							lastStationSubmitted = true;
+						}
+					}
+				}
+				await update();
+			};
+		}}>
 			<input type="hidden" name="eventId" value={data.dbShootEvents[0].id} />
 			<input type="hidden" name="teamId" value={shootingTeamId} />
 			<input type="hidden" name="roundId" value={shootingTeamRoundId} />
+			<input type="hidden" name="teamScoreId" value={shootingTeamRoundId} />
 			<input type="hidden" name="roundStationId" value={shootingTeamStationId} />
 			<input type="hidden" name="stationAmmo" bind:value={$myStationAmmo} />
 			<input type="hidden" name="stationClays" bind:value={$myStationClays} />
@@ -322,7 +349,7 @@
 			<input type="hidden" name="teamId2" value={onDeckTeamId} />
 			<input type="hidden" name="roundAmmo" bind:value={$allStationAmmos} />
 			<input type="hidden" name="roundClays" bind:value={$allStationClays} />
-			<input type="hidden" name="completeRound" bind:value={completeRoundOnSubmit} />
+			<input type="hidden" name="completeRound" value="false" />
 			{#if data.dbShootEvents[0].eventState === 'NEW'}
 				<button
 					formaction="?/startEvent"
@@ -396,8 +423,12 @@
 								<button type="button" class="p-1 m-1 w-full btn variant-ghost-warning" disabled={$myStationClays.includes('-')} on:click={() => shot(4)}>4<img class="mx-2 h-6 md:h-8 lg:h-10" src={shell} alt="shell" /></button>
 							</div>
 							<div class="flex m-1 justify-start">
-								<button type="button" class="m-2 w-full btn variant-ghost-secondary" on:click={undo}>reset 🔄️</button>
-								<button type="submit" class="m-2 w-full btn variant-outline-primary" disabled={!$myStationAmmo.match('x|o')}>Submit</button>
+								<button formaction="?/undo" type="submit" class="m-2 w-full btn variant-ghost-secondary" on:click={undo}>reset 🔄️</button>
+								{#if isLastStation && lastStationSubmitted}
+									<button formaction="?/completeRound" type="submit" class="m-2 w-full btn variant-filled-primary">Complete</button>
+								{:else}
+									<button type="submit" class="m-2 w-full btn variant-outline-primary" disabled={!$myStationAmmo.match('x|o')}>Submit</button>
+								{/if}
 							</div>
 						</div>
 					</div>
