@@ -18,7 +18,7 @@
 			{:else if c === 'x'}
 				<img class="w-6" src={clayhit} alt="clayhit" />
 			{:else if c === '|'}
-				<span class="divider-vertical border-0" />
+				<span class="divider-vertical border-0"></span>
 			{:else}
 				<img class="w-6" src={claymiss} alt="claymiss" />
 			{/if}
@@ -29,7 +29,7 @@
 			{#if a === '-'}
 				<img class="h-6" src={shell} alt="shell" />
 			{:else if a === '|'}
-				<span class="divider-vertical border-0" />
+				<span class="divider-vertical border-0"></span>
 			{:else}
 				<img class="h-6" src={shellshot} alt="shellshot" />
 			{/if}

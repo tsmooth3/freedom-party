@@ -1,4 +1,4 @@
-import type { PageServerLoad } from "../$types";
+import type { PageServerLoad } from "./$types";
 import type { prismaEventRound, prismaShootEvent} from "$lib/shared/utils";
 import type { Actions } from "@sveltejs/kit";
 import { invalidateAll } from "$app/navigation";
@@ -45,13 +45,6 @@ export const actions: Actions = {
         const teamId = Number(formData.get('teamId'))
         const teamId2 = Number(formData.get('teamId2'))
 
-        //score round
-        let teamTotal = Number(formData.get('teamTotal'))
-        let teamShotsFired = Number(formData.get('teamShotsFired'))
-        let ammo = String(formData.get('roundAmmo'))
-        let clays = String(formData.get('roundClays'))
-        await fetch('/api/score/round/' + teamScoreId + '?roundAmmo=' + ammo + '&roundClays=' + clays)
-        await fetch('/api/score/team/' + teamId + '?teamTotal=' + teamTotal + '&teamShotsFired=' + teamShotsFired)
 
         // set round to complete
         await fetch('/api/complete/' + eventId + '/round/' + teamScoreId)
