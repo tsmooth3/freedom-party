@@ -65,43 +65,49 @@
 		<!-- DYNAMIC LEADERBOARD (Team 5-Stand) -->
 		{#if dynamicEventData}
 			<div class="space-y-6">
-				<!-- Event Title Card -->
-				<div class="bg-indigo-600 text-white p-6 rounded-2xl shadow-xl space-y-2 text-center md:text-left">
-					<span class="text-xs font-bold uppercase tracking-widest text-indigo-200 bg-indigo-500/40 px-3 py-1 rounded-full">
-						🏆 Team 5-Stand Leaderboard
-					</span>
-					<h1 class="text-2xl md:text-3xl font-black uppercase tracking-wide mt-2">{dynamicEventData.eventName}</h1>
-					<p class="text-xs text-indigo-100 uppercase tracking-widest">{dynamicEventData.roundName} • Status: <span class="bg-indigo-700/60 px-2 py-0.5 rounded font-black text-white">{dynamicEventData.eventState}</span></p>
-				</div>
-
-				<!-- Shooting & On Deck Live Tracking Header -->
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<!-- Active Shooter -->
-					<div class="p-5 rounded-2xl bg-zinc-900 text-white border border-zinc-800 shadow space-y-2">
-						<span class="text-[10px] font-bold uppercase tracking-widest text-green-400 block">🟢 Now Shooting</span>
-						{#if dynamicEventData.rawTeams && dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex]}
-							{@const currentTeam = dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex]}
-							<h3 class="text-lg font-black uppercase text-indigo-400">{currentTeam.teamName}</h3>
-							<p class="text-xs text-zinc-300 font-medium">{currentTeam.shooter1} • {currentTeam.shooter2}</p>
-							<p class="text-xs font-bold text-zinc-400">At Stand #{dynamicEventData.currentStationIndex + 1} ({dynamicEventData.stations[dynamicEventData.currentStationIndex]?.sequence || ''})</p>
-						{:else}
-							<p class="text-sm font-semibold text-zinc-400">No active team</p>
-						{/if}
+				<!-- Unified Event Header & Live Status Card -->
+				<div class="bg-indigo-600 text-white p-6 rounded-2xl shadow-xl grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+					<!-- Left column: Title, Round, Status -->
+					<div class="space-y-1 text-center lg:text-left lg:col-span-1">
+						<span class="text-[10px] font-bold uppercase tracking-widest text-indigo-200 bg-indigo-500/50 px-3 py-1 rounded-full">
+							🏆 Team 5-Stand Event
+						</span>
+						<h1 class="text-xl md:text-2xl font-black uppercase tracking-wide mt-2">{dynamicEventData.eventName}</h1>
+						<p class="text-xs text-indigo-100 uppercase tracking-widest mt-1">
+							{dynamicEventData.roundName} • Status: 
+							<span class="bg-indigo-700/80 px-2 py-0.5 rounded font-black text-white">{dynamicEventData.eventState}</span>
+						</p>
 					</div>
 
-					<!-- On Deck -->
-					<div class="p-5 rounded-2xl bg-zinc-950 text-white border border-zinc-800 shadow space-y-2">
-						<span class="text-[10px] font-bold uppercase tracking-widest text-yellow-500 block">🟡 On Deck</span>
-						{#if dynamicEventData.rawTeams && dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex + 1]}
-							{@const onDeckTeam = dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex + 1]}
-							<h3 class="text-lg font-black uppercase text-zinc-300">{onDeckTeam.teamName}</h3>
-							<p class="text-xs text-zinc-400 font-medium">{onDeckTeam.shooter1} • {onDeckTeam.shooter2}</p>
-							<p class="text-xs font-bold text-zinc-500">Preparing for Stand #1</p>
-						{:else}
-							<h3 class="text-lg font-black uppercase text-zinc-500">End of Round</h3>
-							<p class="text-xs text-zinc-500 font-medium">All teams have rotated through the stands.</p>
-							<p class="text-xs font-bold text-zinc-600">-</p>
-						{/if}
+					<!-- Right columns (col-span-2): Compact Shooting & On Deck info -->
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:col-span-2">
+						<!-- Now Shooting -->
+						<div class="p-4 rounded-xl bg-indigo-700/40 border border-indigo-500/30 space-y-1">
+							<span class="text-[9px] font-bold uppercase tracking-widest text-green-300 block">🟢 Now Shooting</span>
+							{#if dynamicEventData.rawTeams && dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex]}
+								{@const currentTeam = dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex]}
+								<h3 class="text-sm font-black uppercase tracking-wide text-white">{currentTeam.teamName}</h3>
+								<p class="text-[11px] text-indigo-100 font-medium leading-tight">{currentTeam.shooter1} • {currentTeam.shooter2}</p>
+								<p class="text-[10px] font-bold text-indigo-200 mt-1">Stand #{dynamicEventData.currentStationIndex + 1} ({dynamicEventData.stations[dynamicEventData.currentStationIndex]?.sequence || ''})</p>
+							{:else}
+								<p class="text-xs text-indigo-200">No active team</p>
+							{/if}
+						</div>
+
+						<!-- On Deck -->
+						<div class="p-4 rounded-xl bg-indigo-700/20 border border-indigo-500/20 space-y-1">
+							<span class="text-[9px] font-bold uppercase tracking-widest text-yellow-300 block">🟡 On Deck</span>
+							{#if dynamicEventData.rawTeams && dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex + 1]}
+								{@const onDeckTeam = dynamicEventData.rawTeams[dynamicEventData.currentTeamIndex + 1]}
+								<h3 class="text-sm font-black uppercase tracking-wide text-indigo-100">{onDeckTeam.teamName}</h3>
+								<p class="text-[11px] text-indigo-200/80 font-medium leading-tight">{onDeckTeam.shooter1} • {onDeckTeam.shooter2}</p>
+								<p class="text-[10px] font-bold text-indigo-300 mt-1">Preparing for Stand #1</p>
+							{:else}
+								<h3 class="text-sm font-black uppercase text-indigo-300">End of Round</h3>
+								<p class="text-[11px] text-indigo-300/80 leading-tight">All teams rotated through</p>
+								<p class="text-[10px] font-bold text-indigo-400 mt-1">-</p>
+							{/if}
+						</div>
 					</div>
 				</div>
 
