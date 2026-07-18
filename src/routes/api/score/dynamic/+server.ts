@@ -8,10 +8,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	try {
-		const { teamId, stationLayoutId, claysHit } = await request.json();
+		const { teamId, stationLayoutId, claysHit, currentTeamIndex, currentStationIndex } = await request.json();
 
-		if (teamId === undefined || stationLayoutId === undefined || claysHit === undefined) {
-			return json({ success: false, message: 'Missing score parameters.' }, { status: 400 });
+		// We can use this endpoint to either update scores + status, or just status/indexes
+		if (stationLayoutId === undefined) {
+			return json({ success: false, message: 'Missing station parameter.' }, { status: 400 });
 		}
 
 		// 1. Fetch event to verify ownership/privilege
@@ -39,24 +40,38 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return json({ success: false, message: 'Unauthorized to score this event.' }, { status: 403 });
 		}
 
-		// 2. Upsert the TeamStationScore
-		const updatedScore = await prisma.teamStationScore.upsert({
-			where: {
-				teamId_stationLayoutId: {
+		// 2. Upsert the TeamStationScore if score values are passed
+		let updatedScore = null;
+		if (teamId !== undefined && claysHit !== undefined) {
+			updatedScore = await prisma.teamStationScore.upsert({
+				where: {
+					teamId_stationLayoutId: {
+						teamId: Number(teamId),
+						stationLayoutId: Number(stationLayoutId)
+					}
+				},
+				update: {
+					claysHit: Number(claysHit),
+					isComplete: true
+				},
+				create: {
 					teamId: Number(teamId),
-					stationLayoutId: Number(stationLayoutId)
+					stationLayoutId: Number(stationLayoutId),
+					claysHit: Number(claysHit),
+					shotsFired: 4,
+					isComplete: true
 				}
-			},
-			update: {
-				claysHit: Number(claysHit),
-				isComplete: true
-			},
-			create: {
-				teamId: Number(teamId),
-				stationLayoutId: Number(stationLayoutId),
-				claysHit: Number(claysHit),
-				shotsFired: 4,
-				isComplete: true
+			});
+		}
+
+		// 3. Update the event tracking state and transition to ACTIVE if still in SETUP
+		const nextState = event.eventState === 'SETUP' ? 'ACTIVE' : event.eventState;
+		await prisma.dynamicEvent.update({
+			where: { id: event.id },
+			data: {
+				eventState: nextState,
+				currentTeamIndex: Number(currentTeamIndex !== undefined ? currentTeamIndex : event.currentTeamIndex),
+				currentStationIndex: Number(currentStationIndex !== undefined ? currentStationIndex : event.currentStationIndex)
 			}
 		});
 

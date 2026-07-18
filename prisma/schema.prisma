@@ -83,6 +83,10 @@ model DynamicEvent {
   eventName       String
   eventState      String            // "SETUP", "ACTIVE", "COMPLETE"
   
+  // Real-time tracking
+  currentTeamIndex    Int             @default(0)
+  currentStationIndex Int             @default(0)
+  
   // Ownership
   creatorId       Int?
   creator         User?             @relation("EventCreator", fields: [creatorId], references: [id])

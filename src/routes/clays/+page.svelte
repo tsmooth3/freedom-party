@@ -52,11 +52,26 @@
 
 	function selectDynamicEvent(event: any) {
 		selectedEvent = event;
-		activeTeamIndex = 0;
-		activeStationIndex = 0;
+		activeTeamIndex = event.currentTeamIndex !== undefined ? event.currentTeamIndex : 0;
+		activeStationIndex = event.currentStationIndex !== undefined ? event.currentStationIndex : 0;
 		scoringError = '';
 		tempScoreInput = null;
 	}
+
+	// Svelte 5 reactive sync: Keep database updated on who is currently shooting and on-deck in real-time
+	$effect(() => {
+		if (selectedEvent && activeStation && !isSaving) {
+			fetch('/api/score/dynamic', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					stationLayoutId: activeStation.id,
+					currentTeamIndex: activeTeamIndex,
+					currentStationIndex: activeStationIndex
+				})
+			}).catch(err => console.error("Real-time index sync failed:", err));
+		}
+	});
 
 	async function submitScore(scoreValue: number) {
 		if (!activeTeam || !activeStation) return;

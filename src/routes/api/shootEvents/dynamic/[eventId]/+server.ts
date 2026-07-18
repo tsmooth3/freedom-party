@@ -34,7 +34,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 
 		// Calculate totals and format team score objects
-		const teamsWithScores = event.teams.map(team => {
+		const formattedTeams = event.teams.map(team => {
 			let totalHit = 0;
 			let totalPossible = 0;
 
@@ -54,12 +54,17 @@ export const GET: RequestHandler = async ({ params }) => {
 				totalHit,
 				totalPossible
 			};
-		}).sort((a, b) => b.totalHit - a.totalHit); // Sort by highest hits (leaderboard!)
+		});
+
+		// Leaderboard order
+		const sortedTeamsForLeaderboard = [...formattedTeams].sort((a, b) => b.totalHit - a.totalHit);
 
 		return json({
 			id: event.id,
 			eventName: event.eventName,
 			eventState: event.eventState,
+			currentTeamIndex: event.currentTeamIndex,
+			currentStationIndex: event.currentStationIndex,
 			roundName: event.rounds[0]?.roundName || 'Round 1',
 			stations: event.rounds[0]?.stations.map(st => ({
 				stationIndex: st.stationIndex,
@@ -67,7 +72,8 @@ export const GET: RequestHandler = async ({ params }) => {
 				sequence: st.sequence,
 				totalClays: st.totalClays
 			})) || [],
-			teams: teamsWithScores
+			teams: sortedTeamsForLeaderboard,
+			rawTeams: formattedTeams // preserved original creation order
 		});
 	} catch (error: any) {
 		console.error('Failed to load dynamic event watch data:', error);
