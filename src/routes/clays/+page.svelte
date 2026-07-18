@@ -169,12 +169,21 @@
 						<span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Active Shoot Event</span>
 						<h2 class="text-lg font-extrabold uppercase text-zinc-900 dark:text-zinc-50">{selectedEvent.eventName}</h2>
 					</div>
-					<button
-						class="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold hover:bg-zinc-100 transition rounded-lg text-sm"
-						onclick={() => selectedEvent = null}
-					>
-						← Switch Event
-					</button>
+					<div class="flex items-center gap-2">
+						<a
+							href="/watchEvent/{selectedEvent.id}"
+							target="_blank"
+							class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow-sm"
+						>
+							📺 Watch Leaderboard
+						</a>
+						<button
+							class="px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold hover:bg-zinc-100 transition rounded-lg text-sm"
+							onclick={() => selectedEvent = null}
+						>
+							← Switch Event
+						</button>
+					</div>
 				</div>
 
 				{#if scoringError}
