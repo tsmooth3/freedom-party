@@ -51,7 +51,16 @@
 			"Patriots United", "Liberty Warriors", "Independence Icons", "Bravehearts",
 			"Founding Forces", "Liberty Leaders", "Honor Guard", "American Dream Team"
 		];
-		return teamNames[Math.floor(Math.random() * teamNames.length)];
+		// Filter out names that are already taken
+		const existingNames = teams.map(t => t.teamName.toLowerCase().trim());
+		const availableNames = teamNames.filter(name => !existingNames.includes(name.toLowerCase().trim()));
+
+		if (availableNames.length > 0) {
+			return availableNames[Math.floor(Math.random() * availableNames.length)];
+		}
+
+		// Fallback if all standard names are taken
+		return `Squad ${String.fromCharCode(65 + (teams.length % 26))}`;
 	}
 
 	async function handleSubmit() {
