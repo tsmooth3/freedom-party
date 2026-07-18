@@ -16,10 +16,11 @@ A complete architecture blueprint and database schema design for replatforming t
 - **Admin Portal & Secure Cascade Deletion** — Implemented signed cookie-based admin session authentication, administrative routes (`/admin/login` and `/admin/dashboard`), and a database-level transaction API (`/api/admin/shootEvents/[eventId]`) to safely cascade delete entire shooting events (along with their teams, rounds, station layouts, and scores).
 - [Database Schema Redesign & Flexible Event Workflows](./ticket-1-schema-design.md) (Resolved) — Designed a 100% backward-compatible set of schema models (`DynamicEvent`, `DynamicTeam`, `DynamicRound`, `StationLayout`, `TeamStationScore`) and SvelteKit route flows for Team 5-Stand, keeping `/slide` out of scope.
 - [UI Framework Pivot](./ticket-2-ui-pivot.md) (Resolved) — Decided on pure Tailwind CSS + lightweight custom Svelte 5 runes components for zero external UI dependencies, a clean/modern high-contrast aesthetic, and a native icon dark-mode toggler.
+- [Authentication Strategy](./ticket-3-auth-strategy.md) (Resolved) — Designed a unified `locals.user` session system with native Google OAuth endpoints, local HMAC-signed 1-hour session fallbacks, and fine-grained event-creator scorer access.
 
 ## Open Tickets (Frontier)
 
-- [Authentication Strategy](./ticket-3-auth-strategy.md) (HITL) — Designing dual support for Google OAuth and local passphrase/credentials authentication.
+*No open tickets remain on the frontier!*
 
 ## Not yet specified
 
