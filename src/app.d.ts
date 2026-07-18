@@ -8,6 +8,13 @@ declare global {
 	namespace App {
 		interface Locals {
 			isAdmin: boolean;
+			user: {
+				id?: number;
+				email?: string;
+				name: string;
+				role: 'ADMIN' | 'SCORER' | 'SPECTATOR';
+				authType: 'LOCAL' | 'GOOGLE';
+			} | null;
 		}
 		// interface PageData {}
 		// interface Error {}
