@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import blankMenu from '$lib/images/blank_menu.png';
+	import terminology from '$lib/images/terminology.png';
 
 	// Props using Svelte 5 runes
 	let { data } = $props<{ data: { user: any } }>();
@@ -16,14 +17,14 @@
 		{ teamName: 'Stars and Stripes', shooter1: 'Shooter A', shooter2: 'Shooter B' }
 	]);
 
-	// Stations state (6 stands default)
+	// Stations state (6 stands default) with simple digit sequences
 	let stations = $state<Array<{ stationIndex: number; launchType: string; sequence: string }>>([
-		{ stationIndex: 1, launchType: 'REPORT_TRIPLE', sequence: '1 -> 3 -> 2' },
-		{ stationIndex: 2, launchType: 'TRIPLE_1_PLUS_2', sequence: '2 -> 4 & 5' },
-		{ stationIndex: 3, launchType: 'TRIPLE_2_PLUS_1', sequence: '1 & 3 -> 4' },
-		{ stationIndex: 4, launchType: 'QUAD_2_PLUS_2', sequence: '1 & 2 -> 3 & 5' },
-		{ stationIndex: 5, launchType: 'REPORT_TRIPLE', sequence: '5 -> 2 -> 4' },
-		{ stationIndex: 6, launchType: 'QUAD_2_PLUS_2', sequence: '2 & 3 -> 1 & 4' }
+		{ stationIndex: 1, launchType: 'REPORT_TRIPLE', sequence: '132' },
+		{ stationIndex: 2, launchType: 'TRIPLE_1_PLUS_2', sequence: '245' },
+		{ stationIndex: 3, launchType: 'TRIPLE_2_PLUS_1', sequence: '134' },
+		{ stationIndex: 4, launchType: 'QUAD_2_PLUS_2', sequence: '1235' },
+		{ stationIndex: 5, launchType: 'REPORT_TRIPLE', sequence: '524' },
+		{ stationIndex: 6, launchType: 'QUAD_2_PLUS_2', sequence: '2314' }
 	]);
 
 	let errorMessage = $state<string>('');
@@ -235,19 +236,27 @@
 				Each station uses the Team 5-Stand layout. Configure the launch logic type and active trap release sequences.
 			</p>
 
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-				<!-- Menu graphic reference -->
-				<div class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 text-center space-y-3">
-					<h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Visual Layout Map Reference</h3>
-					<img src={blankMenu} alt="Blank Stand Menu Map" class="max-w-xs mx-auto rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
-					<div class="text-xs text-zinc-500 space-y-1">
-						<p>🎯 <strong>Report Triples:</strong> 3 clays (1 then 2 on report then 3 on report)</p>
-						<p>🎯 <strong>2+2 Quads:</strong> 4 clays (pair of 2 then another pair of 2 on report)</p>
-					</div>
+			<!-- Menu graphic references side-by-side -->
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-900/30 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+				<div class="space-y-2 text-center">
+					<h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Layout Menu Map</h3>
+					<img src={blankMenu} alt="Blank Stand Menu Map" class="max-h-60 mx-auto rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
+				</div>
+				<div class="space-y-2 text-center">
+					<h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Launch Terminology Reference</h3>
+					<img src={terminology} alt="Presentation Terminology Guide" class="max-h-60 mx-auto rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+				<div class="lg:col-span-3">
+					<p class="text-xs text-zinc-500 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 p-3 rounded-lg">
+						💡 <strong>Simplified Release Input Format:</strong> Just type the numbers directly (e.g., <code>132</code> for Trap 1 then Trap 3 then Trap 2). For a 2+1 Triple, <code>553</code> is perfect (simultaneous pair on Trap 5, then Trap 3 on report). For a Quad, enter 4 digits such as <code>1235</code>.
+					</p>
 				</div>
 
-				<!-- Station layout selectors -->
-				<div class="space-y-4">
+				<!-- Station layout selectors (taking 3 columns space below references) -->
+				<div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each stations as station}
 						<div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 bg-zinc-50/30 dark:bg-zinc-900/10">
 							<div class="flex justify-between items-center">
@@ -271,12 +280,12 @@
 									</select>
 								</div>
 								<div class="space-y-1">
-									<span class="text-xs text-zinc-500">Trap Sequence</span>
+									<span class="text-xs text-zinc-500">Trap Sequence (Digits)</span>
 									<input
 										type="text"
 										class="w-full p-2 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-zinc-50"
 										bind:value={station.sequence}
-										placeholder="e.g. 1 -> 3 -> 2"
+										placeholder="e.g. 132 or 553"
 									/>
 								</div>
 							</div>
