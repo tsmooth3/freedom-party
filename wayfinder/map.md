@@ -14,10 +14,10 @@ A complete architecture blueprint and database schema design for replatforming t
 ## Decisions so far
 
 - **Admin Portal & Secure Cascade Deletion** — Implemented signed cookie-based admin session authentication, administrative routes (`/admin/login` and `/admin/dashboard`), and a database-level transaction API (`/api/admin/shootEvents/[eventId]`) to safely cascade delete entire shooting events (along with their teams, rounds, station layouts, and scores).
+- [Database Schema Redesign & Flexible Event Workflows](./ticket-1-schema-design.md) (Resolved) — Designed a 100% backward-compatible set of schema models (`DynamicEvent`, `DynamicTeam`, `DynamicRound`, `StationLayout`, `TeamStationScore`) and SvelteKit route flows for Team 5-Stand, keeping `/slide` out of scope.
 
 ## Open Tickets (Frontier)
 
-- [Database Schema Redesign & Flexible Event Workflows](./ticket-1-schema-design.md) (HITL) — Designing the PostgreSQL/Prisma schema to support multiple sport shooting styles with dynamic rounds/stations while maintaining backwards compatibility.
 - [UI Framework Pivot](./ticket-2-ui-pivot.md) (HITL) — Selecting a Svelte 5-native and maintainable alternative to replace Skeleton.dev.
 - [Authentication Strategy](./ticket-3-auth-strategy.md) (HITL) — Designing dual support for Google OAuth and local passphrase/credentials authentication.
 
