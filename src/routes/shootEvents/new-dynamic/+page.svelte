@@ -4,31 +4,59 @@
 	import terminology from '$lib/images/terminology.png';
 
 	// Props using Svelte 5 runes
-	let { data } = $props<{ data: { user: any } }>();
+	let { data } = $props<{ data: { user: any; editEvent: any } }>();
 
 	// Stepper state
 	let currentStep = $state<number>(1);
 
-	// Event Configuration state
-	let eventName = $state<string>('');
+	// Event Configuration state (supports edit mode prepopulating)
+	let eventName = $state<string>(data.editEvent?.eventName || '');
 	
-	// Teams state
-	let teams = $state<Array<{ teamName: string; shooter1: string; shooter2: string }>>([
-		{ teamName: 'Stars and Stripes', shooter1: 'Shooter A', shooter2: 'Shooter B' }
-	]);
+	// Teams state (supports edit mode prepopulating)
+	let teams = $state<Array<{ teamName: string; shooter1: string; shooter2: string }>>(
+		data.editEvent?.teams || [
+			{ teamName: 'Stars and Stripes', shooter1: 'Shooter A', shooter2: 'Shooter B' }
+		]
+	);
 
-	// Stations state (6 stands default) with simple digit sequences
-	let stations = $state<Array<{ stationIndex: number; launchType: string; sequence: string }>>([
-		{ stationIndex: 1, launchType: 'REPORT_TRIPLE', sequence: '132' },
-		{ stationIndex: 2, launchType: 'TRIPLE_1_PLUS_2', sequence: '245' },
-		{ stationIndex: 3, launchType: 'TRIPLE_2_PLUS_1', sequence: '134' },
-		{ stationIndex: 4, launchType: 'QUAD_2_PLUS_2', sequence: '1235' },
-		{ stationIndex: 5, launchType: 'REPORT_TRIPLE', sequence: '524' },
-		{ stationIndex: 6, launchType: 'QUAD_2_PLUS_2', sequence: '2314' }
-	]);
+	// Stations state (supports edit mode prepopulating)
+	let stations = $state<Array<{ stationIndex: number; launchType: string; sequence: string }>>(
+		data.editEvent?.stations || [
+			{ stationIndex: 1, launchType: 'REPORT_TRIPLE', sequence: '132' },
+			{ stationIndex: 2, launchType: 'TRIPLE_1_PLUS_2', sequence: '245' },
+			{ stationIndex: 3, launchType: 'TRIPLE_2_PLUS_1', sequence: '134' },
+			{ stationIndex: 4, launchType: 'QUAD_2_PLUS_2', sequence: '1235' },
+			{ stationIndex: 5, launchType: 'REPORT_TRIPLE', sequence: '524' },
+			{ stationIndex: 6, launchType: 'QUAD_2_PLUS_2', sequence: '2314' }
+		]
+	);
 
 	let errorMessage = $state<string>('');
 	let isSubmitting = $state<boolean>(false);
+
+	// Live derived analytics: clay inventory requirements
+	const clayInventory = $derived.by(() => {
+		const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+		let totalClays = 0;
+
+		stations.forEach(st => {
+			const digits = st.sequence.replace(/[^1-5]/g, '').split('').map(Number);
+			const claysPerPresentation = st.launchType === 'QUAD_2_PLUS_2' ? 4 : 3;
+			
+			// 3 presentations per team
+			const multiplier = 3 * teams.length;
+
+			digits.forEach(digit => {
+				if (counts[digit] !== undefined) {
+					counts[digit] += multiplier;
+				}
+			});
+
+			totalClays += claysPerPresentation * multiplier;
+		});
+
+		return { counts, totalClays };
+	});
 
 	// Helpers
 	function addTeam() {
@@ -43,6 +71,41 @@
 		if (teams.length > 1) {
 			teams.splice(index, 1);
 		}
+	}
+
+	function randomizeTeamOrder() {
+		teams = [...teams].sort(() => Math.random() - 0.5);
+	}
+
+	function addStation() {
+		const nextIdx = stations.length + 1;
+		stations.push({
+			stationIndex: nextIdx,
+			launchType: 'REPORT_TRIPLE',
+			sequence: '132'
+		});
+	}
+
+	function removeStation(index: number) {
+		if (stations.length > 1) {
+			stations.splice(index, 1);
+			stations.forEach((st, idx) => {
+				st.stationIndex = idx + 1;
+			});
+		}
+	}
+
+	function randomizeTraps() {
+		const launchTypes = ['REPORT_TRIPLE', 'TRIPLE_1_PLUS_2', 'TRIPLE_2_PLUS_1', 'QUAD_2_PLUS_2'];
+		stations.forEach(st => {
+			st.launchType = launchTypes[Math.floor(Math.random() * launchTypes.length)];
+			const numClays = st.launchType === 'QUAD_2_PLUS_2' ? 4 : 3;
+			let seq = '';
+			for (let i = 0; i < numClays; i++) {
+				seq += Math.floor(Math.random() * 5 + 1);
+			}
+			st.sequence = seq;
+		});
 	}
 
 	function getRandomTeamName() {
@@ -73,23 +136,26 @@
 		isSubmitting = true;
 		errorMessage = '';
 
+		const isEditMode = !!data.editEvent;
+		const url = '/api/shootEvents/dynamic';
+		const method = isEditMode ? 'PUT' : 'POST';
+		const payload = isEditMode 
+			? { eventId: data.editEvent.id, eventName, teams, stations }
+			: { eventName, teams, stations };
+
 		try {
-			const res = await fetch('/api/shootEvents/dynamic', {
-				method: 'POST',
+			const res = await fetch(url, {
+				method,
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					eventName,
-					teams,
-					stations
-				})
+				body: JSON.stringify(payload)
 			});
 
 			const result = await res.json();
 			if (result.success) {
-				// Navigate to the dynamic score tracking / watch page
-				goto(`/watchEvent/${result.eventId}`);
+				// Navigate directly to the scoring cockpit with the active event!
+				goto(`/clays`);
 			} else {
-				errorMessage = result.message || 'Failed to create dynamic event.';
+				errorMessage = result.message || 'Failed to save dynamic event.';
 			}
 		} catch (err: any) {
 			errorMessage = err.message || 'An unexpected error occurred.';
@@ -168,12 +234,20 @@
 		<div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
 			<div class="flex justify-between items-center">
 				<h2 class="text-xl font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Step 2: Team Rosters</h2>
-				<button
-					class="px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/30 rounded-lg font-bold hover:bg-indigo-100 transition text-sm"
-					onclick={addTeam}
-				>
-					+ Add Team
-				</button>
+				<div class="flex gap-2">
+					<button
+						class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-lg font-bold transition text-sm"
+						onclick={randomizeTeamOrder}
+					>
+						🎲 Randomize Order
+					</button>
+					<button
+						class="px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/30 rounded-lg font-bold hover:bg-indigo-100 transition text-sm"
+						onclick={addTeam}
+					>
+						+ Add Team
+					</button>
+				</div>
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,10 +314,45 @@
 	<!-- STEP 3: CONFIGURE STATION MENUS -->
 	{#if currentStep === 3}
 		<div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
-			<h2 class="text-xl font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Step 3: Station Launch Menus</h2>
-			<p class="text-sm text-zinc-500 dark:text-zinc-400">
-				Each station uses the Team 5-Stand layout. Configure the launch logic type and active trap release sequences.
-			</p>
+			<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+				<div>
+					<h2 class="text-xl font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Step 3: Station Launch Menus</h2>
+					<p class="text-sm text-zinc-500 dark:text-zinc-400">
+						Each station uses the Team 5-Stand layout. Configure the launch logic type and active trap release sequences.
+					</p>
+				</div>
+				<div class="flex gap-2 w-full md:w-auto">
+					<button
+						class="flex-1 md:flex-none px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-lg font-bold transition text-sm"
+						onclick={randomizeTraps}
+					>
+						🎲 Randomize Traps
+					</button>
+					<button
+						class="flex-1 md:flex-none px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/30 rounded-lg font-bold hover:bg-indigo-100 transition text-sm"
+						onclick={addStation}
+					>
+						+ Add Stand
+					</button>
+				</div>
+			</div>
+
+			<!-- Live Analytics & Clay Inventory Tool -->
+			<div class="p-5 rounded-2xl bg-zinc-900 text-white border border-zinc-800 space-y-4 shadow">
+				<div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+					<h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400">📊 Clay Inventory Analytics Tool (Dynamic Event)</h3>
+					<span class="text-xs font-black text-indigo-300">Total Event Clays Required: {clayInventory.totalClays}</span>
+				</div>
+				<div class="grid grid-cols-5 gap-3 text-center">
+					{#each [1, 2, 3, 4, 5] as trap}
+						<div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
+							<span class="text-[10px] text-zinc-500 font-bold uppercase">Trap #{trap}</span>
+							<p class="text-lg font-black text-indigo-400">{clayInventory.counts[trap]}</p>
+							<span class="text-[9px] text-zinc-600 block">clays required</span>
+						</div>
+					{/each}
+				</div>
+			</div>
 
 			<!-- Menu graphic references side-by-side -->
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-900/30 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
@@ -270,9 +379,19 @@
 						<div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 bg-zinc-50/30 dark:bg-zinc-900/10">
 							<div class="flex justify-between items-center">
 								<span class="text-sm font-bold text-zinc-900 dark:text-zinc-50">Stand / Station #{station.stationIndex}</span>
-								<span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-2 py-1 rounded">
-									{station.launchType === 'QUAD_2_PLUS_2' ? '4 Clays' : '3 Clays'}
-								</span>
+								<div class="flex items-center gap-2">
+									<span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-2 py-1 rounded">
+										{station.launchType === 'QUAD_2_PLUS_2' ? '12 Clays' : '9 Clays'}
+									</span>
+									{#if stations.length > 1}
+										<button
+											class="text-xs text-red-500 hover:text-red-700 font-bold"
+											onclick={() => removeStation(station.stationIndex - 1)}
+										>
+											Remove
+										</button>
+									{/if}
+								</div>
 							</div>
 
 							<div class="grid grid-cols-2 gap-3">

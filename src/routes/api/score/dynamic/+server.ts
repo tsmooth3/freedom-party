@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	try {
-		const { teamId, stationLayoutId, claysHit, currentTeamIndex, currentStationIndex } = await request.json();
+		const { teamId, stationLayoutId, claysHit, presentationIndex, currentTeamIndex, currentStationIndex, currentPresentationIndex } = await request.json();
 
 		// We can use this endpoint to either update scores + status, or just status/indexes
 		if (stationLayoutId === undefined) {
@@ -45,9 +45,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (teamId !== undefined && claysHit !== undefined) {
 			updatedScore = await prisma.teamStationScore.upsert({
 				where: {
-					teamId_stationLayoutId: {
+					teamId_stationLayoutId_presentationIndex: {
 						teamId: Number(teamId),
-						stationLayoutId: Number(stationLayoutId)
+						stationLayoutId: Number(stationLayoutId),
+						presentationIndex: Number(presentationIndex || 1)
 					}
 				},
 				update: {
@@ -57,6 +58,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				create: {
 					teamId: Number(teamId),
 					stationLayoutId: Number(stationLayoutId),
+					presentationIndex: Number(presentationIndex || 1),
 					claysHit: Number(claysHit),
 					shotsFired: 4,
 					isComplete: true
@@ -71,7 +73,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			data: {
 				eventState: nextState,
 				currentTeamIndex: Number(currentTeamIndex !== undefined ? currentTeamIndex : event.currentTeamIndex),
-				currentStationIndex: Number(currentStationIndex !== undefined ? currentStationIndex : event.currentStationIndex)
+				currentStationIndex: Number(currentStationIndex !== undefined ? currentStationIndex : event.currentStationIndex),
+				currentPresentationIndex: Number(currentPresentationIndex !== undefined ? currentPresentationIndex : event.currentPresentationIndex)
 			}
 		});
 

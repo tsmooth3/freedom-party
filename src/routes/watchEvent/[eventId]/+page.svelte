@@ -152,7 +152,7 @@
 										{#each dynamicEventData.stations as station}
 											<td class="py-4 px-4 text-center">
 												{#if team.scores[station.stationIndex] !== undefined}
-													<span class="inline-flex items-center justify-center h-8 w-8 rounded-full font-bold text-xs {team.scores[station.stationIndex] === station.totalClays ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300'}">
+													<span class="inline-flex items-center justify-center h-8 w-8 rounded-full font-bold text-xs {team.scores[station.stationIndex] === (station.totalClays * 3) ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300'}">
 														{team.scores[station.stationIndex]}
 													</span>
 												{:else}

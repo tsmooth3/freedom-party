@@ -39,7 +39,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			let totalPossible = 0;
 
 			const scoresByStationIndex = team.stationScores.reduce((acc: any, score) => {
-				acc[score.station.stationIndex] = score.claysHit;
+				acc[score.station.stationIndex] = (acc[score.station.stationIndex] || 0) + score.claysHit;
 				totalHit += score.claysHit;
 				totalPossible += score.station.totalClays;
 				return acc;
@@ -50,7 +50,7 @@ export const GET: RequestHandler = async ({ params }) => {
 				teamName: team.teamName,
 				shooter1: team.shooter1,
 				shooter2: team.shooter2,
-				scores: scoresByStationIndex, // e.g. {1: 3, 2: 4, 3: 1}
+				scores: scoresByStationIndex, // sum of all 3 presentations per station
 				totalHit,
 				totalPossible
 			};

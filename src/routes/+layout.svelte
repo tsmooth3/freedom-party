@@ -14,12 +14,6 @@
 <nav class="flex min-w-[390px] sticky top-0 font-sans justify-end items-center variant-glass-secondary mb-2 px-4 py-1">
 	<a class="m-3 font-semibold text-zinc-900 dark:text-zinc-50" href="/">Home</a>
 	<a class="m-3 font-semibold text-zinc-900 dark:text-zinc-50" href="/clays">Shoot</a>
-	<a class="m-3 font-semibold text-zinc-900 dark:text-zinc-50" href="/shootEvents">Events</a>
-	
-	{#if data?.user}
-		<a class="m-3 font-semibold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 transition" href="/shootEvents/new-dynamic">Create Event</a>
-	{/if}
-
 	<a class="m-3 font-semibold text-zinc-900 dark:text-zinc-50" href="/slide">Slide</a>
 	<a class="m-3 font-semibold text-zinc-900 dark:text-zinc-50" href="/about">About</a>
 

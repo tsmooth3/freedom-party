@@ -20,6 +20,9 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 			teams: {
 				orderBy: {
 					id: 'asc'
+				},
+				include: {
+					stationScores: true
 				}
 			},
 			rounds: {
@@ -43,11 +46,20 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 			id: event.id,
 			eventName: event.eventName,
 			eventState: event.eventState,
+			currentTeamIndex: event.currentTeamIndex,
+			currentStationIndex: event.currentStationIndex,
+			currentPresentationIndex: event.currentPresentationIndex,
 			teams: event.teams.map(t => ({
 				id: t.id,
 				teamName: t.teamName,
 				shooter1: t.shooter1,
-				shooter2: t.shooter2
+				shooter2: t.shooter2,
+				stationScores: t.stationScores.map(ss => ({
+					stationLayoutId: ss.stationLayoutId,
+					presentationIndex: ss.presentationIndex,
+					claysHit: ss.claysHit,
+					isComplete: ss.isComplete
+				}))
 			})),
 			round: event.rounds[0] ? {
 				id: event.rounds[0].id,

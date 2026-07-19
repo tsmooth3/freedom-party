@@ -84,8 +84,9 @@ model DynamicEvent {
   eventState      String            // "SETUP", "ACTIVE", "COMPLETE"
   
   // Real-time tracking
-  currentTeamIndex    Int             @default(0)
-  currentStationIndex Int             @default(0)
+  currentTeamIndex         Int             @default(0)
+  currentStationIndex      Int             @default(0)
+  currentPresentationIndex Int             @default(0)
   
   // Ownership
   creatorId       Int?
@@ -134,6 +135,7 @@ model TeamStationScore {
   id              Int               @id @default(autoincrement())
   teamId          Int
   stationLayoutId Int
+  presentationIndex Int             @default(1) // 1, 2, or 3
   claysHit        Int               @default(0) // 0 to 4
   shotsFired      Int               @default(4) // standard 4 shots total (2 each)
   isComplete      Boolean           @default(false)
@@ -141,5 +143,5 @@ model TeamStationScore {
   team            DynamicTeam       @relation(fields: [teamId], references: [id], onDelete: Cascade)
   station         StationLayout     @relation(fields: [stationLayoutId], references: [id], onDelete: Cascade)
 
-  @@unique([teamId, stationLayoutId])
+  @@unique([teamId, stationLayoutId, presentationIndex])
 }
