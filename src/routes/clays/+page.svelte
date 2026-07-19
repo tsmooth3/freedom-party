@@ -265,7 +265,7 @@
 						<p class="text-xs text-zinc-400 mt-1">Create one using the button above to start scoring.</p>
 					</div>
 				{:else}
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 gap-4">
 						{#each data.dynamicEvents as de}
 							<button
 								class="p-5 text-left rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500 hover:shadow bg-white dark:bg-zinc-950 transition flex justify-between items-center"
@@ -274,11 +274,17 @@
 								<div class="space-y-1">
 									<h3 class="font-extrabold text-zinc-900 dark:text-zinc-50 uppercase tracking-wide">{de.eventName}</h3>
 									<p class="text-xs text-zinc-400">Created: {new Date().toDateString()}</p>
-									<p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{de.teams.length} Teams | {de.round?.stations.length || 0} Stands</p>
+									<p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{de.teams.length} Teams | {de.round?.stations.length || 0} Stands • Status: <span class="uppercase font-bold">{de.eventState}</span></p>
 								</div>
-								<span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full uppercase">
-									Score Event
-								</span>
+								{#if de.eventState === 'COMPLETE'}
+									<span class="px-3 py-1 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 text-xs font-bold rounded-full uppercase">
+										Complete
+									</span>
+								{:else}
+									<span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full uppercase">
+										Score Event
+									</span>
+								{/if}
 							</button>
 						{/each}
 					</div>

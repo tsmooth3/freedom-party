@@ -8,11 +8,8 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 	const dbShootEventResponse = await fetch('/api/shootEvents/byLeader');
 	const dbShootEvents: prismaShootEvent[] = await dbShootEventResponse.json();
 
-	// 2. Fetch active dynamic shoot events
+	// 2. Fetch all dynamic shoot events
 	const activeDynamicEvents = await prisma.dynamicEvent.findMany({
-		where: {
-			eventState: { not: 'COMPLETE' }
-		},
 		orderBy: {
 			createdAt: 'desc'
 		},
