@@ -329,50 +329,32 @@
 				{/if}
 
 				<!-- Dashboard Layout Grid -->
-				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-					<!-- Active Team Panel -->
-					<div class="space-y-4">
-						<div class="bg-indigo-600 text-white p-6 rounded-2xl shadow-xl space-y-4">
-							<div class="flex justify-between items-start">
-								<div>
-									<span class="text-xs font-bold uppercase tracking-widest text-indigo-200">Active Shooting Team</span>
-									<h3 class="text-2xl font-extrabold uppercase">{activeTeam?.teamName}</h3>
-								</div>
-								<div class="text-right bg-indigo-700 px-3 py-1 rounded-lg border border-indigo-500">
-									<span class="text-[10px] font-bold text-indigo-200 uppercase block">Shot Sequence</span>
-									<span class="text-lg font-black text-white">#{activePresentationIndex + 1} of 3</span>
-								</div>
+				<div class="grid grid-cols-1 gap-6 items-start">
+					<!-- Score Selector Entry Matrix -->
+					<div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
+						<div class="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-2">
+							<div>
+								<span class="text-xs font-bold uppercase text-zinc-400 block">Record Clays Hit</span>
+								<h3 class="text-lg font-black uppercase text-indigo-600 dark:text-indigo-400">{activeTeam?.teamName}</h3>
+								<p class="text-[11px] text-zinc-500 font-medium">{activeTeam?.shooter1} • {activeTeam?.shooter2}</p>
 							</div>
-							<div class="grid grid-cols-2 gap-4 border-t border-indigo-500 pt-3">
-								<div>
-									<span class="text-xs text-indigo-200">Shooter 1</span>
-									<p class="font-bold text-sm">{activeTeam?.shooter1}</p>
-								</div>
-								<div>
-									<span class="text-xs text-indigo-200">Shooter 2</span>
-									<p class="font-bold text-sm">{activeTeam?.shooter2}</p>
-								</div>
+							<div class="text-right">
+								<span class="text-xs font-semibold text-zinc-500 uppercase">Max: {activeStation?.totalClays}</span>
+								<span class="text-2xl font-black block text-zinc-900 dark:text-zinc-50">#{activePresentationIndex + 1} / 3</span>
 							</div>
 						</div>
 
-						<!-- Score Selector Entry Matrix -->
-						<div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-							<div class="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-2">
-								<span class="text-xs font-bold uppercase text-zinc-400">Record Team Clays Hit</span>
-								<span class="text-xs font-semibold text-zinc-500">Max Score: {activeStation?.totalClays}</span>
-							</div>
-
-							<div class="grid grid-cols-5 gap-2">
-								{#each [0, 1, 2, 3, 4] as val}
-									<button
-										class="py-4 text-lg font-black rounded-xl border-2 transition {tempScoreInput === val ? 'bg-indigo-600 text-white border-indigo-600 scale-105' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-50'} {val > (activeStation?.totalClays || 3) ? 'opacity-30 cursor-not-allowed text-zinc-300' : 'hover:bg-indigo-600 hover:text-white hover:border-indigo-600 active:scale-95'}"
-										disabled={val > (activeStation?.totalClays || 3) || isSaving}
-										onclick={() => submitScore(val)}
-									>
-										{val}
-									</button>
-								{/each}
-							</div>
+						<div class="grid grid-cols-5 gap-2">
+							{#each [0, 1, 2, 3, 4] as val}
+								<button
+									class="py-4 text-lg font-black rounded-xl border-2 transition {tempScoreInput === val ? 'bg-indigo-600 text-white border-indigo-600 scale-105' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-50'} {val > (activeStation?.totalClays || 3) ? 'opacity-30 cursor-not-allowed text-zinc-300' : 'hover:bg-indigo-600 hover:text-white hover:border-indigo-600 active:scale-95'}"
+									disabled={val > (activeStation?.totalClays || 3) || isSaving}
+									onclick={() => submitScore(val)}
+								>
+									{val}
+								</button>
+							{/each}
+						</div>
 
 							<!-- Current Stand Presentations list -->
 							<div class="border-t border-zinc-100 dark:border-zinc-800 pt-3">
