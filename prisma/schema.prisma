@@ -65,3 +65,83 @@ model Slides {
   sliderFPS  Int
   sliderMPH  Decimal
 }
+
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  name          String?
+  role          String         @default("SPECTATOR") // Default system role: "SPECTATOR", "SCORER", "ADMIN"
+  createdAt     DateTime       @default(now())
+  
+  createdEvents DynamicEvent[] @relation("EventCreator")
+}
+
+model DynamicEvent {
+  id              Int               @id @default(autoincrement())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  eventName       String
+  eventState      String            // "SETUP", "ACTIVE", "COMPLETE"
+  
+  // Real-time tracking
+  currentTeamIndex         Int             @default(0)
+  currentStationIndex      Int             @default(0)
+  currentPresentationIndex Int             @default(0)
+  
+  // Ownership
+  creatorId       Int?
+  creator         User?             @relation("EventCreator", fields: [creatorId], references: [id])
+
+  teams           DynamicTeam[]
+  rounds          DynamicRound[]
+}
+
+model DynamicTeam {
+  id              Int               @id @default(autoincrement())
+  eventId         Int
+  teamName        String
+  shooter1        String
+  shooter2        String
+  
+  event           DynamicEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  stationScores   TeamStationScore[]
+}
+
+model DynamicRound {
+  id              Int               @id @default(autoincrement())
+  eventId         Int
+  roundName       String            // e.g. "Round 1"
+  roundIndex      Int               // e.g. 1
+  roundState      String            // "SETUP", "ACTIVE", "COMPLETE"
+
+  event           DynamicEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  stations        StationLayout[]
+}
+
+model StationLayout {
+  id              Int               @id @default(autoincrement())
+  roundId         Int
+  stationIndex    Int               // e.g., 1, 2, 3, 4, 5, 6
+  launchType      String            // "REPORT_TRIPLE", "TRIPLE_1_PLUS_2", "TRIPLE_2_PLUS_1", "QUAD_2_PLUS_2"
+  sequence        String            // e.g., "1 -> 3 -> 2"
+  totalClays      Int               // 3 (for Triples) or 4 (for Quads)
+  trapSequence    String            // Comma-separated or JSON string of active traps (e.g. "1,3,2")
+
+  round           DynamicRound      @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  scores          TeamStationScore[]
+}
+
+model TeamStationScore {
+  id              Int               @id @default(autoincrement())
+  teamId          Int
+  stationLayoutId Int
+  presentationIndex Int             @default(1) // 1, 2, or 3
+  claysHit        Int               @default(0) // 0 to 4
+  shotsFired      Int               @default(4) // standard 4 shots total (2 each)
+  isComplete      Boolean           @default(false)
+
+  team            DynamicTeam       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  station         StationLayout     @relation(fields: [stationLayoutId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, stationLayoutId, presentationIndex])
+}
