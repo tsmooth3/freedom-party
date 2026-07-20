@@ -20,6 +20,17 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
 		sameSite: 'lax'
 	});
 
+	const redirectTo = url.searchParams.get('redirectTo');
+	if (redirectTo) {
+		cookies.set('oauth_redirect', redirectTo, {
+			path: '/',
+			httpOnly: true,
+			maxAge: 60 * 10, // 10 minutes
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax'
+		});
+	}
+
 	const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + 
 		new URLSearchParams({
 			client_id: clientId,

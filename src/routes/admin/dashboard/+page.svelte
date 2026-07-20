@@ -1,57 +1,195 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { enhance } from '$app/forms';
 
-	// Svelte 5 props
-	let { data } = $props<{ data: { shootEvents: any[] } }>();
+	let { data } = $props<{
+		data: {
+			legacyEvents: any[];
+			dynamicEvents: any[];
+			users: any[];
+			currentUserId: number | null;
+		};
+	}>();
 
-	let deletingId = $state<number | null>(null);
-	let deletingName = $state<string>('');
-	let confirmInput = $state<string>('');
-	let isDeleting = $state<boolean>(false);
-	let errorMessage = $state<string>('');
+	type Tab = 'legacy' | 'dynamic' | 'users';
+	let activeTab = $state<Tab>('legacy');
 
-	function openDeleteModal(id: number, name: string) {
-		deletingId = id;
-		deletingName = name;
+	// Shared event purge modal
+	type EventKind = 'legacy' | 'dynamic';
+	let purgeKind = $state<EventKind | null>(null);
+	let purgeId = $state<number | null>(null);
+	let purgeName = $state('');
+	let confirmInput = $state('');
+	let isWorking = $state(false);
+	let errorMessage = $state('');
+
+	// User role change
+	let roleBusyId = $state<number | null>(null);
+
+	// User delete modal
+	let deleteUserId = $state<number | null>(null);
+	let deleteUserName = $state('');
+	let deleteUserEvents = $state(0);
+	let reassignToUserId = $state<string>('null');
+	let userConfirmInput = $state('');
+
+	const ROLES = ['SPECTATOR', 'SCORER', 'ADMIN'] as const;
+
+	const adminCount = $derived(data.users.filter((u) => u.role === 'ADMIN').length);
+
+	const reassignOptions = $derived(data.users.filter((u) => u.id !== deleteUserId));
+
+	function openEventPurge(kind: EventKind, id: number, name: string) {
+		purgeKind = kind;
+		purgeId = id;
+		purgeName = name;
 		confirmInput = '';
 		errorMessage = '';
 	}
 
-	function closeDeleteModal() {
-		deletingId = null;
-		deletingName = '';
+	function closeEventPurge() {
+		purgeKind = null;
+		purgeId = null;
+		purgeName = '';
 		confirmInput = '';
 		errorMessage = '';
 	}
 
-	async function handleDelete() {
-		if (!deletingId) return;
+	async function handleEventPurge() {
+		if (!purgeId || !purgeKind) return;
 		if (confirmInput.toLowerCase() !== 'delete') {
 			errorMessage = 'Please type "delete" to confirm.';
 			return;
 		}
 
-		isDeleting = true;
+		isWorking = true;
 		errorMessage = '';
-
 		try {
-			const res = await fetch(`/api/admin/shootEvents/${deletingId}`, {
-				method: 'DELETE'
-			});
+			const path =
+				purgeKind === 'legacy'
+					? `/api/admin/shootEvents/${purgeId}`
+					: `/api/admin/dynamicEvents/${purgeId}`;
+			const res = await fetch(path, { method: 'DELETE' });
 			const result = await res.json();
-
 			if (result.success) {
 				await invalidateAll();
-				closeDeleteModal();
+				closeEventPurge();
 			} else {
 				errorMessage = result.message || 'Failed to delete event.';
 			}
 		} catch (err: any) {
 			errorMessage = err.message || 'An error occurred during deletion.';
 		} finally {
-			isDeleting = false;
+			isWorking = false;
 		}
+	}
+
+	async function changeRole(userId: number, role: string) {
+		if (data.currentUserId !== null && userId === data.currentUserId) {
+			errorMessage = 'You cannot change your own role.';
+			return;
+		}
+		roleBusyId = userId;
+		errorMessage = '';
+		try {
+			const res = await fetch(`/api/admin/users/${userId}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ role })
+			});
+			const result = await res.json();
+			if (result.success) {
+				await invalidateAll();
+			} else {
+				errorMessage = result.message || 'Failed to update role.';
+			}
+		} catch (err: any) {
+			errorMessage = err.message || 'An error occurred updating role.';
+		} finally {
+			roleBusyId = null;
+		}
+	}
+
+	function openUserDelete(user: {
+		id: number;
+		name: string | null;
+		email: string;
+		eventsCreated: number;
+		role: string;
+	}) {
+		if (data.currentUserId !== null && user.id === data.currentUserId) {
+			errorMessage = 'You cannot delete your own account.';
+			return;
+		}
+		if (user.role === 'ADMIN' && adminCount <= 1) {
+			errorMessage = 'Cannot delete the last remaining ADMIN.';
+			return;
+		}
+		deleteUserId = user.id;
+		deleteUserName = user.name || user.email;
+		deleteUserEvents = user.eventsCreated;
+		reassignToUserId = 'null';
+		userConfirmInput = '';
+		errorMessage = '';
+	}
+
+	function closeUserDelete() {
+		deleteUserId = null;
+		deleteUserName = '';
+		deleteUserEvents = 0;
+		reassignToUserId = 'null';
+		userConfirmInput = '';
+		errorMessage = '';
+	}
+
+	async function handleUserDelete() {
+		if (!deleteUserId) return;
+		if (userConfirmInput.toLowerCase() !== 'delete') {
+			errorMessage = 'Please type "delete" to confirm.';
+			return;
+		}
+
+		isWorking = true;
+		errorMessage = '';
+		try {
+			const payload = {
+				reassignToUserId: reassignToUserId === 'null' ? null : Number(reassignToUserId)
+			};
+			const res = await fetch(`/api/admin/users/${deleteUserId}`, {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+			const result = await res.json();
+			if (result.success) {
+				await invalidateAll();
+				closeUserDelete();
+			} else {
+				errorMessage = result.message || 'Failed to delete user.';
+			}
+		} catch (err: any) {
+			errorMessage = err.message || 'An error occurred during deletion.';
+		} finally {
+			isWorking = false;
+		}
+	}
+
+	function creatorLabel(creator: { name: string | null; email: string } | null) {
+		if (!creator) return '—';
+		return creator.name || creator.email;
+	}
+
+	function isSelf(userId: number) {
+		return data.currentUserId !== null && userId === data.currentUserId;
+	}
+
+	function isLastAdmin(user: { id: number; role: string }) {
+		return user.role === 'ADMIN' && adminCount <= 1;
+	}
+
+	function stateChip(state: string) {
+		if (state === 'COMPLETE') return 'bg-emerald-600 text-white';
+		if (state === 'ACTIVE') return 'bg-indigo-600 text-white';
+		return 'bg-zinc-600 text-white';
 	}
 </script>
 
@@ -59,126 +197,408 @@
 	<title>Admin Dashboard - Freedom Party</title>
 </svelte:head>
 
-<div class="container mx-auto p-6 space-y-8 max-w-5xl">
-	<!-- Admin Header -->
-	<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-surface-500/20 pb-6">
-		<div>
-			<h1 class="h1 text-primary-500 font-bold uppercase tracking-wider">Admin Dashboard</h1>
-			<p class="text-surface-600 dark:text-surface-300">Manage database state and purge old shooting events safely.</p>
+<div class="w-full max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5 overflow-x-hidden">
+	<header class="space-y-1 pb-4 border-b border-zinc-200/40 dark:border-zinc-800">
+		<h1 class="text-2xl sm:text-3xl font-extrabold uppercase tracking-wider text-indigo-500">
+			Admin Dashboard
+		</h1>
+		<p class="text-sm text-zinc-500 dark:text-zinc-400">Manage events, users, and roles.</p>
+	</header>
+
+	{#if errorMessage && purgeId === null && deleteUserId === null}
+		<div
+			class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm font-semibold flex justify-between gap-2 items-start"
+		>
+			<span class="min-w-0 break-words">{errorMessage}</span>
+			<button type="button" class="shrink-0 underline text-xs" onclick={() => (errorMessage = '')}
+				>dismiss</button
+			>
 		</div>
+	{/if}
 
-		<form method="POST" action="/admin/login?/logout" use:enhance>
-			<button type="submit" class="btn variant-filled-surface hover:variant-filled-warning font-semibold">
-				Sign Out
-			</button>
-		</form>
+	<!-- Tabs: equal-width, wrap labels, no page overflow -->
+	<div
+		class="grid grid-cols-3 gap-1 p-1 rounded-xl bg-zinc-100/80 dark:bg-zinc-900/80 border border-zinc-200/50 dark:border-zinc-800"
+		role="tablist"
+	>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'legacy'}
+			class="rounded-lg px-1.5 py-2.5 text-[11px] sm:text-sm font-bold uppercase tracking-wide transition text-center leading-tight
+				{activeTab === 'legacy'
+				? 'bg-white dark:bg-zinc-800 text-indigo-600 shadow-sm'
+				: 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}"
+			onclick={() => (activeTab = 'legacy')}
+		>
+			Legacy
+			<span class="block sm:inline sm:ml-1 opacity-70 font-semibold normal-case"
+				>({data.legacyEvents.length})</span
+			>
+		</button>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'dynamic'}
+			class="rounded-lg px-1.5 py-2.5 text-[11px] sm:text-sm font-bold uppercase tracking-wide transition text-center leading-tight
+				{activeTab === 'dynamic'
+				? 'bg-white dark:bg-zinc-800 text-indigo-600 shadow-sm'
+				: 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}"
+			onclick={() => (activeTab = 'dynamic')}
+		>
+			Dynamic
+			<span class="block sm:inline sm:ml-1 opacity-70 font-semibold normal-case"
+				>({data.dynamicEvents.length})</span
+			>
+		</button>
+		<button
+			type="button"
+			role="tab"
+			aria-selected={activeTab === 'users'}
+			class="rounded-lg px-1.5 py-2.5 text-[11px] sm:text-sm font-bold uppercase tracking-wide transition text-center leading-tight
+				{activeTab === 'users'
+				? 'bg-white dark:bg-zinc-800 text-indigo-600 shadow-sm'
+				: 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}"
+			onclick={() => (activeTab = 'users')}
+		>
+			Users
+			<span class="block sm:inline sm:ml-1 opacity-70 font-semibold normal-case"
+				>({data.users.length})</span
+			>
+		</button>
 	</div>
 
-	<!-- Main Card / Table -->
-	<div class="card p-6 shadow-xl variant-glass-surface space-y-6">
-		<h2 class="h3 font-bold uppercase tracking-wide">All Shoot Events</h2>
+	<!-- LEGACY: card list -->
+	{#if activeTab === 'legacy'}
+		<section class="space-y-3">
+			<h2 class="text-sm font-extrabold uppercase tracking-wider text-zinc-500">Legacy Shoot Events</h2>
+			{#if data.legacyEvents.length === 0}
+				<div
+					class="text-center py-12 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500"
+				>
+					No legacy shoot events found.
+				</div>
+			{:else}
+				<ul class="space-y-3">
+					{#each data.legacyEvents as event}
+						<li
+							class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/60 p-4 space-y-3"
+						>
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0">
+									<p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+										ID {event.id}
+									</p>
+									<h3 class="font-extrabold text-zinc-900 dark:text-zinc-50 break-words">
+										{event.eventName}
+									</h3>
+								</div>
+								<span
+									class="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full {stateChip(
+										event.eventState
+									)}"
+								>
+									{event.eventState}
+								</span>
+							</div>
+							<div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+								<span><strong class="text-zinc-700 dark:text-zinc-300">{event.teamsCount}</strong> teams</span>
+								<span><strong class="text-zinc-700 dark:text-zinc-300">{event.roundsCount}</strong> rounds</span>
+								<span class="w-full sm:w-auto">{new Date(event.createdAt).toLocaleString()}</span>
+							</div>
+							<button
+								type="button"
+								class="w-full sm:w-auto px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition"
+								onclick={() => openEventPurge('legacy', event.id, event.eventName)}
+							>
+								Purge Event
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</section>
+	{/if}
 
-		{#if data.shootEvents.length === 0}
-			<div class="text-center py-12 text-surface-600 dark:text-surface-400">
-				No shoot events found in the database.
-			</div>
-		{:else}
-			<div class="table-container">
-				<table class="table table-hover">
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Event Name</th>
-							<th>Status</th>
-							<th>Teams</th>
-							<th>Rounds</th>
-							<th>Created At</th>
-							<th class="text-right">Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each data.shootEvents as event}
-							<tr>
-								<td>{event.id}</td>
-								<td class="font-bold">{event.eventName}</td>
-								<td>
-									<span class="chip {event.eventState === 'COMPLETE' ? 'variant-filled-success' : 'variant-filled-primary'}">
-										{event.eventState}
-									</span>
-								</td>
-								<td>{event.teamsCount} teams</td>
-								<td>{event.roundsCount} rounds</td>
-								<td class="text-xs text-surface-600 dark:text-surface-400">
-									{new Date(event.createdAt).toLocaleString()}
-								</td>
-								<td class="text-right">
-									<button
-										class="btn btn-sm variant-filled-error hover:scale-105 transition-transform"
-										onclick={() => openDeleteModal(event.id, event.eventName)}
+	<!-- DYNAMIC: card list -->
+	{#if activeTab === 'dynamic'}
+		<section class="space-y-3">
+			<h2 class="text-sm font-extrabold uppercase tracking-wider text-zinc-500">Dynamic Shoot Events</h2>
+			{#if data.dynamicEvents.length === 0}
+				<div
+					class="text-center py-12 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500"
+				>
+					No dynamic events found.
+				</div>
+			{:else}
+				<ul class="space-y-3">
+					{#each data.dynamicEvents as event}
+						<li
+							class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/60 p-4 space-y-3"
+						>
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0">
+									<p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+										ID {event.id}
+									</p>
+									<h3 class="font-extrabold text-zinc-900 dark:text-zinc-50 break-words">
+										{event.eventName}
+									</h3>
+								</div>
+								<span
+									class="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full {stateChip(
+										event.eventState
+									)}"
+								>
+									{event.eventState}
+								</span>
+							</div>
+							<div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+								<span><strong class="text-zinc-700 dark:text-zinc-300">{event.teamsCount}</strong> teams</span>
+								<span><strong class="text-zinc-700 dark:text-zinc-300">{event.standsCount}</strong> stands</span>
+								<span class="w-full break-words">
+									Creator:
+									<strong class="text-zinc-700 dark:text-zinc-300">{creatorLabel(event.creator)}</strong>
+									{#if event.creator}
+										<span class="text-zinc-400"> · {event.creator.email}</span>
+									{/if}
+								</span>
+								<span class="w-full sm:w-auto">{new Date(event.createdAt).toLocaleString()}</span>
+							</div>
+							<button
+								type="button"
+								class="w-full sm:w-auto px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition"
+								onclick={() => openEventPurge('dynamic', event.id, event.eventName)}
+							>
+								Purge Event
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</section>
+	{/if}
+
+	<!-- USERS: card list -->
+	{#if activeTab === 'users'}
+		<section class="space-y-3">
+			<h2 class="text-sm font-extrabold uppercase tracking-wider text-zinc-500">Users & Roles</h2>
+			{#if data.users.length === 0}
+				<div
+					class="text-center py-12 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500"
+				>
+					No users found.
+				</div>
+			{:else}
+				<ul class="space-y-3">
+					{#each data.users as user}
+						<li
+							class="rounded-2xl border p-4 space-y-3
+								{isSelf(user.id)
+								? 'border-indigo-400/50 bg-indigo-500/5'
+								: 'border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/60'}"
+						>
+							<div class="flex items-start justify-between gap-2">
+								<div class="min-w-0">
+									<p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+										ID {user.id}
+										{#if isSelf(user.id)}
+											· <span class="text-indigo-500">you</span>
+										{/if}
+									</p>
+									<h3 class="font-extrabold text-zinc-900 dark:text-zinc-50 break-words">
+										{user.name || '—'}
+									</h3>
+									<p class="text-xs text-zinc-500 break-all">{user.email}</p>
+								</div>
+								<span
+									class="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200"
+								>
+									{user.role}
+								</span>
+							</div>
+
+							<div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+								<span
+									><strong class="text-zinc-700 dark:text-zinc-300">{user.eventsCreated}</strong> events
+									created</span
+								>
+								<span>{new Date(user.createdAt).toLocaleString()}</span>
+							</div>
+
+							<div class="flex flex-col sm:flex-row gap-2">
+								<label class="flex-1 min-w-0 space-y-1">
+									<span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400"
+										>Role</span
 									>
-										Purge Event
+									<select
+										class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm font-semibold"
+										value={user.role}
+										disabled={roleBusyId === user.id || isSelf(user.id) || isLastAdmin(user)}
+										onchange={(e) => {
+											const next = (e.currentTarget as HTMLSelectElement).value;
+											if (next !== user.role) changeRole(user.id, next);
+										}}
+									>
+										{#each ROLES as r}
+											<option value={r}>{r}</option>
+										{/each}
+									</select>
+								</label>
+								<div class="flex flex-col justify-end">
+									<button
+										type="button"
+										class="w-full sm:w-auto px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold transition"
+										disabled={isSelf(user.id) || isLastAdmin(user)}
+										onclick={() => openUserDelete(user)}
+									>
+										Delete User
 									</button>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
-	</div>
+								</div>
+							</div>
+						</li>
+					{/each}
+				</ul>
+				<p class="text-xs text-zinc-500 leading-relaxed">
+					Role changes apply immediately in the database. Google-signed-in users may need to sign
+					out/in for their session to pick up a new role.
+				</p>
+			{/if}
+		</section>
+	{/if}
 </div>
 
-<!-- Safe Deletion Confirmation Modal -->
-{#if deletingId !== null}
-	<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-		<div class="card p-6 max-w-md w-full variant-glass-surface shadow-2xl space-y-4 border border-error-500/30">
+<!-- Event purge modal -->
+{#if purgeId !== null}
+	<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+		<div
+			class="card p-5 sm:p-6 w-full sm:max-w-md variant-glass-surface shadow-2xl space-y-4 border border-error-500/30 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"
+		>
 			<header class="space-y-2">
-				<h3 class="h3 text-error-500 font-bold uppercase">Confirm Event Purge</h3>
-				<p class="text-sm text-surface-600 dark:text-surface-300">
-					You are about to permanently delete <strong class="text-error-500">{deletingName}</strong> (ID: {deletingId}).
+				<h3 class="text-lg font-bold uppercase text-error-500">Confirm Event Purge</h3>
+				<p class="text-sm text-zinc-600 dark:text-zinc-300 break-words">
+					Permanently delete <strong class="text-error-500">{purgeName}</strong>
+					({purgeKind} · ID: {purgeId}).
 				</p>
 			</header>
 
-			<div class="alert variant-filled-warning p-4 rounded text-sm space-y-1">
-				<p class="font-bold">⚠️ Warning:</p>
-				<p>This will cascade-delete all related teams, rounds, station layouts, and scores. This action cannot be undone.</p>
+			<div class="rounded-xl bg-amber-500/15 border border-amber-500/30 p-3 text-sm space-y-1">
+				<p class="font-bold">Warning</p>
+				<p class="text-zinc-700 dark:text-zinc-300">
+					Hard-deletes the event and related teams, rounds, stations, and scores. Cannot be undone.
+				</p>
 			</div>
 
-			<div class="space-y-3">
-				<label class="label">
-					<span class="text-sm">Type <strong class="uppercase text-error-500">delete</strong> below to confirm:</span>
-					<input
-						class="input p-2 rounded"
-						type="text"
-						bind:value={confirmInput}
-						placeholder="delete"
-						disabled={isDeleting}
-					/>
-				</label>
+			<label class="block space-y-1">
+				<span class="text-sm"
+					>Type <strong class="uppercase text-error-500">delete</strong> to confirm:</span
+				>
+				<input
+					class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2"
+					type="text"
+					bind:value={confirmInput}
+					placeholder="delete"
+					disabled={isWorking}
+				/>
+			</label>
 
-				{#if errorMessage}
-					<p class="text-error-500 text-sm text-center font-semibold">{errorMessage}</p>
+			{#if errorMessage}
+				<p class="text-error-500 text-sm text-center font-semibold break-words">{errorMessage}</p>
+			{/if}
+
+			<footer class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-1">
+				<button
+					type="button"
+					class="w-full sm:w-auto px-4 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 font-semibold"
+					onclick={closeEventPurge}
+					disabled={isWorking}>Cancel</button
+				>
+				<button
+					type="button"
+					class="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white font-bold"
+					onclick={handleEventPurge}
+					disabled={isWorking || confirmInput.toLowerCase() !== 'delete'}
+				>
+					{isWorking ? 'Purging…' : 'Permanently Purge'}
+				</button>
+			</footer>
+		</div>
+	</div>
+{/if}
+
+<!-- User delete modal -->
+{#if deleteUserId !== null}
+	<div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+		<div
+			class="card p-5 sm:p-6 w-full sm:max-w-md variant-glass-surface shadow-2xl space-y-4 border border-error-500/30 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"
+		>
+			<header class="space-y-2">
+				<h3 class="text-lg font-bold uppercase text-error-500">Delete User</h3>
+				<p class="text-sm text-zinc-600 dark:text-zinc-300 break-words">
+					Permanently delete <strong class="text-error-500">{deleteUserName}</strong> (ID: {deleteUserId}).
+				</p>
+			</header>
+
+			<div class="rounded-xl bg-amber-500/15 border border-amber-500/30 p-3 text-sm space-y-2">
+				<p class="font-bold">Event ownership</p>
+				{#if deleteUserEvents > 0}
+					<p class="text-zinc-700 dark:text-zinc-300">
+						This user created <strong>{deleteUserEvents}</strong> dynamic event{deleteUserEvents === 1
+							? ''
+							: 's'}. Choose what happens to those events:
+					</p>
+				{:else}
+					<p class="text-zinc-700 dark:text-zinc-300">
+						This user has no created dynamic events.
+					</p>
 				{/if}
 			</div>
 
-			<footer class="flex justify-end gap-3 pt-2">
-				<button
-					class="btn variant-soft"
-					onclick={closeDeleteModal}
-					disabled={isDeleting}
+			<label class="block space-y-1">
+				<span class="text-sm font-semibold">Reassign dynamic events to</span>
+				<select
+					class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2"
+					bind:value={reassignToUserId}
+					disabled={isWorking}
 				>
-					Cancel
-				</button>
-				<button
-					class="btn variant-filled-error"
-					onclick={handleDelete}
-					disabled={isDeleting || confirmInput.toLowerCase() !== 'delete'}
+					<option value="null">Unassign (no creator)</option>
+					{#each reassignOptions as u}
+						<option value={String(u.id)}>{u.name || u.email} · {u.role}</option>
+					{/each}
+				</select>
+			</label>
+
+			<label class="block space-y-1">
+				<span class="text-sm"
+					>Type <strong class="uppercase text-error-500">delete</strong> to confirm:</span
 				>
-					{#if isDeleting}
-						Purging...
-					{:else}
-						Permanently Purge
-					{/if}
+				<input
+					class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2"
+					type="text"
+					bind:value={userConfirmInput}
+					placeholder="delete"
+					disabled={isWorking}
+				/>
+			</label>
+
+			{#if errorMessage}
+				<p class="text-error-500 text-sm text-center font-semibold break-words">{errorMessage}</p>
+			{/if}
+
+			<footer class="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-1">
+				<button
+					type="button"
+					class="w-full sm:w-auto px-4 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 font-semibold"
+					onclick={closeUserDelete}
+					disabled={isWorking}>Cancel</button
+				>
+				<button
+					type="button"
+					class="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white font-bold"
+					onclick={handleUserDelete}
+					disabled={isWorking || userConfirmInput.toLowerCase() !== 'delete'}
+				>
+					{isWorking ? 'Deleting…' : 'Delete User'}
 				</button>
 			</footer>
 		</div>

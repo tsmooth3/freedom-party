@@ -1,16 +1,65 @@
+/**
+ * PM2 ecosystem template for production.
+ *
+ * Usage on the server (after filling secrets):
+ *   cp ecosystem.config.cjs.txt ecosystem.config.cjs   # if you keep secrets out of git
+ *   # edit ecosystem.config.cjs with real values
+ *   pm2 start ecosystem.config.cjs
+ *   # or after changes:
+ *   pm2 restart freedom-party --update-env
+ *   pm2 save
+ *
+ * Deploy loop (app dir):
+ *   git pull && npm ci && npx prisma migrate deploy && npm run build && pm2 restart freedom-party
+ *
+ * Replace every <placeholder>. Do not commit real passwords/secrets.
+ */
 module.exports = {
-  apps : [{
-    name   : "freedom-party",
-    script : "./build/index.js",
-    watch: true,
-    autorestart: true,
-    env: {
-        PORT: 3141,
-        ORIGIN: "https://<hostname>",
-        PROTOCOL_HEADER: "x-forwarded-proto",
-        HOST_HEADER: "x-forwarded-host",
-        DATABASE_URL: "postgresql://<user>:<pw>@<host>:<port>/<db>",
-        DIRECT_URL: "postgresql://<user>:<pw>@<host>:<port>/<db>",
-    }
-  }]
-}
+	apps: [
+		{
+			name: 'freedom-party',
+			script: './build/index.js',
+			// cwd: '/path/to/freedom-party', // uncomment if you start PM2 from elsewhere
+			instances: 1,
+			exec_mode: 'fork',
+			watch: false, // never true in prod
+			autorestart: true,
+			max_restarts: 20,
+			min_uptime: '10s',
+			// time: true, // prefix logs with timestamp (pm2)
+			env: {
+				NODE_ENV: 'production',
+
+				// --- SvelteKit / Node adapter (behind reverse proxy) ---
+				PORT: 3141,
+				// Public site origin (scheme + host, no trailing slash). Required for form actions / CSRF.
+				ORIGIN: 'https://<hostname>',
+				// Trust proxy headers from nginx/caddy/traefik (adapter-node)
+				PROTOCOL_HEADER: 'x-forwarded-proto',
+				HOST_HEADER: 'x-forwarded-host',
+				PORT_HEADER: 'x-forwarded-port',
+				// ADDRESS_HEADER: 'x-forwarded-for', // optional; set only if proxy overwrites client IP correctly
+				// XFF_DEPTH: '1', // hop count when using X-Forwarded-For
+
+				// --- Postgres (Prisma) ---
+				// App/pooler URL if you use one; otherwise same as DIRECT_URL
+				DATABASE_URL: 'postgresql://<user>:<password>@<host>:<port>/<database>?schema=public',
+				// Direct (non-pooled) URL for migrations / introspect; often identical to DATABASE_URL
+				DIRECT_URL: 'postgresql://<user>:<password>@<host>:<port>/<database>?schema=public',
+
+				// --- Auth ---
+				// Local admin login password AND HMAC secret for session cookies (admin + Google).
+				// Changing this invalidates all existing sessions.
+				ADMIN_PASSWORD: '<strong-random-secret>',
+				// Set "true" to disable /admin/login (Google-only admin). Omit or "false" to allow local admin.
+				DISABLE_LOCAL_ADMIN: 'false',
+
+				// --- Google OAuth ---
+				GOOGLE_CLIENT_ID: '<google-oauth-client-id>.apps.googleusercontent.com',
+				GOOGLE_CLIENT_SECRET: '<google-oauth-client-secret>',
+				// Must match an Authorized redirect URI in Google Cloud Console
+				GOOGLE_REDIRECT_URI: 'https://<hostname>/login/google/callback'
+			}
+		}
+	]
+};

@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	login: async ({ request, cookies }) => {
+	login: async ({ request, cookies, url }) => {
 		const data = await request.formData();
 		const password = data.get('password');
 		const adminPassword = env.ADMIN_PASSWORD || 'adminpass';
@@ -40,10 +40,12 @@ export const actions: Actions = {
 			maxAge: maxAgeSeconds
 		});
 
-		throw redirect(303, '/admin/dashboard');
+		const redirectTo = url.searchParams.get('redirectTo') || '/admin/dashboard';
+		throw redirect(303, redirectTo);
 	},
 	logout: async ({ cookies }) => {
 		cookies.delete('admin_session', { path: '/' });
+		cookies.delete('google_session', { path: '/' });
 		throw redirect(303, '/admin/login');
 	}
 };

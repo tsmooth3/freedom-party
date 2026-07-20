@@ -1,4 +1,4 @@
-import { redirect, json, type Handle } from '@sveltejs/kit';
+import { redirect, json, error, type Handle } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { createHmac } from 'crypto';
 
@@ -66,12 +66,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = null;
 	}
 
-	const { pathname } = event.url;
+	const { pathname, search } = event.url;
+	const disableLocalAdmin = env.DISABLE_LOCAL_ADMIN === 'true';
+
+	if (disableLocalAdmin && pathname === '/admin/login') {
+		throw error(404, 'Not Found');
+	}
 
 	// Protect Admin Pages (except /admin/login)
 	if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
 		if (!event.locals.isAdmin) {
-			throw redirect(303, '/admin/login');
+			const redirectTo = pathname + search;
+			if (disableLocalAdmin) {
+				throw redirect(303, `/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+			} else {
+				throw redirect(303, `/admin/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+			}
 		}
 	}
 

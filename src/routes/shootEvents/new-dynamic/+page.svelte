@@ -10,26 +10,33 @@
 	let currentStep = $state<number>(1);
 
 	// Event Configuration state (supports edit mode prepopulating)
-	let eventName = $state<string>(data.editEvent?.eventName || '');
+	let eventName = $state<string>('');
 	
 	// Teams state (supports edit mode prepopulating)
-	let teams = $state<Array<{ teamName: string; shooter1: string; shooter2: string }>>(
-		data.editEvent?.teams || [
-			{ teamName: 'Stars and Stripes', shooter1: 'Shooter A', shooter2: 'Shooter B' }
-		]
-	);
+	let teams = $state<Array<{ teamName: string; shooter1: string; shooter2: string }>>([
+		{ teamName: 'Stars and Stripes', shooter1: 'Shooter A', shooter2: 'Shooter B' }
+	]);
 
 	// Stations state (supports edit mode prepopulating)
-	let stations = $state<Array<{ stationIndex: number; launchType: string; sequence: string }>>(
-		data.editEvent?.stations || [
-			{ stationIndex: 1, launchType: 'REPORT_TRIPLE', sequence: '132' },
-			{ stationIndex: 2, launchType: 'TRIPLE_1_PLUS_2', sequence: '245' },
-			{ stationIndex: 3, launchType: 'TRIPLE_2_PLUS_1', sequence: '134' },
-			{ stationIndex: 4, launchType: 'QUAD_2_PLUS_2', sequence: '1235' },
-			{ stationIndex: 5, launchType: 'REPORT_TRIPLE', sequence: '524' },
-			{ stationIndex: 6, launchType: 'QUAD_2_PLUS_2', sequence: '2314' }
-		]
-	);
+	let stations = $state<Array<{ stationIndex: number; launchType: string; sequence: string }>>([
+		{ stationIndex: 1, launchType: 'REPORT_TRIPLE', sequence: '132' },
+		{ stationIndex: 2, launchType: 'REPORT_TRIPLE', sequence: '524' },
+		{ stationIndex: 3, launchType: 'TRIPLE_1_PLUS_2', sequence: '245' },
+		{ stationIndex: 4, launchType: 'TRIPLE_2_PLUS_1', sequence: '134' },
+		{ stationIndex: 5, launchType: 'QUAD_2_PLUS_2', sequence: '1235' }
+	]);
+
+	$effect(() => {
+		if (data.editEvent) {
+			eventName = data.editEvent.eventName || '';
+			if (data.editEvent.teams) {
+				teams = data.editEvent.teams;
+			}
+			if (data.editEvent.stations) {
+				stations = data.editEvent.stations;
+			}
+		}
+	});
 
 	let errorMessage = $state<string>('');
 	let isSubmitting = $state<boolean>(false);

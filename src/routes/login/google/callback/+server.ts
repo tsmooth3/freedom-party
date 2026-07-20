@@ -96,7 +96,10 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			maxAge: maxAgeSeconds
 		});
 
-		throw redirect(303, '/clays'); // redirect scorers/spectators to standard clays screen
+		const redirectTo = cookies.get('oauth_redirect') || '/clays';
+		cookies.delete('oauth_redirect', { path: '/' });
+
+		throw redirect(303, redirectTo); // redirect scorers/spectators to standard clays screen or the original redirect URL
 	} catch (err: any) {
 		if (err.status) throw err;
 		console.error('Error in Google OAuth Callback:', err);
