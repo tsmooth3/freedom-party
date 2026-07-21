@@ -3,7 +3,7 @@
 	import type { prismaShootEvent, prismaEventRound } from '$lib/shared/utils';
 	import ScoreBoard from '$lib/components/ScoreBoard.svelte';
 	import doglaugh from '$lib/images/doglaugh.gif';
-	import blankMenu from '$lib/images/blank_menu.png';
+	import StandMenuDiagram from '$lib/components/StandMenuDiagram.svelte';
 	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
@@ -147,6 +147,21 @@
 
 	function isPerfectPres(hit: number | null | undefined, totalClays: number): boolean {
 		return hit !== null && hit !== undefined && hit === totalClays;
+	}
+
+	function launchTypeLabel(launchType: string | undefined): string {
+		switch (launchType) {
+			case 'REPORT_TRIPLE':
+				return 'Report Triple';
+			case 'TRIPLE_1_PLUS_2':
+				return '1+2 Triple';
+			case 'TRIPLE_2_PLUS_1':
+				return '2+1 Triple';
+			case 'QUAD_2_PLUS_2':
+				return '2+2 Quad';
+			default:
+				return launchType || '';
+		}
 	}
 </script>
 
@@ -310,13 +325,10 @@
 						{/if}
 
 						{#if !isComplete}
-							<!-- Active stand menu diagram -->
+							<!-- Active stand menu diagram with presentation flight lines -->
+							{@const activeStand = dynamicEventData.stations?.[dynamicEventData.currentStationIndex]}
 							<div class="mt-2 rounded-xl overflow-hidden border border-indigo-400/25 bg-indigo-950/30">
-								<img
-									src={blankMenu}
-									alt="Stand menu layout"
-									class="block w-full h-auto max-h-[min(42vh,360px)] object-contain mx-auto"
-								/>
+								<StandMenuDiagram sequence={activeStand?.sequence ?? ''} />
 							</div>
 						{/if}
 					</div>
@@ -487,6 +499,130 @@
 								</div>
 							</div>
 						{/each}
+					</div>
+				</div>
+
+				<!-- Stand × Team matrix (stands on Y, teams on X) -->
+				<div
+					class="bg-white dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden"
+				>
+					<div
+						class="p-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center gap-2 bg-zinc-50/50 dark:bg-zinc-900/10"
+					>
+						<div class="min-w-0">
+							<h2 class="text-sm font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+								By Stand
+							</h2>
+							<p class="text-[11px] text-zinc-500 mt-0.5">
+								Stands down · teams across · presentation order in the stand column
+							</p>
+						</div>
+						{#if !isComplete}
+							<span class="text-xs text-zinc-500 animate-pulse flex items-center gap-1 shrink-0">
+								<span class="h-2 w-2 bg-green-500 rounded-full"></span> Live
+							</span>
+						{:else}
+							<span
+								class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 shrink-0"
+								>Final</span
+							>
+						{/if}
+					</div>
+
+					<div class="overflow-x-auto">
+						<table class="w-full min-w-max text-left border-collapse">
+							<thead>
+								<tr
+									class="text-xs font-bold uppercase text-zinc-400 bg-zinc-50/30 dark:bg-zinc-900/5 border-b border-zinc-100 dark:border-zinc-800"
+								>
+									<th class="py-3 px-4 sticky left-0 z-10 bg-white dark:bg-zinc-950 min-w-[11rem]">
+										Stand &amp; Order
+									</th>
+									{#each dynamicEventData.rawTeams ?? dynamicEventData.teams as team}
+										<th class="py-3 px-3 text-center min-w-[5.5rem] align-bottom">
+											<span
+												class="block font-extrabold text-zinc-700 dark:text-zinc-200 normal-case tracking-wide text-[11px] leading-tight max-w-[7rem] mx-auto"
+												title={team.teamName}
+											>
+												{team.teamName}
+											</span>
+											<span class="block text-[9px] font-medium normal-case text-zinc-400 mt-0.5 leading-tight">
+												{team.shooter1} · {team.shooter2}
+											</span>
+										</th>
+									{/each}
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+								{#each dynamicEventData.stations as station}
+									<tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/5 transition">
+										<td
+											class="py-3 px-3 sticky left-0 z-10 bg-white dark:bg-zinc-950 align-top border-r border-zinc-100 dark:border-zinc-800"
+										>
+											<div class="flex items-start gap-2.5 min-w-0">
+												<div
+													class="shrink-0 w-14 sm:w-16 rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-900 shadow-sm"
+												>
+													<StandMenuDiagram
+														sequence={station.sequence ?? ''}
+														compact
+														expandable
+														uid={`by-stand-${station.stationIndex}`}
+														imgClass="block w-full h-auto object-contain"
+													/>
+												</div>
+												<div class="min-w-0 pt-0.5">
+													<p class="font-extrabold text-zinc-900 dark:text-zinc-50 text-sm leading-tight">
+														Stand {station.stationIndex}
+													</p>
+													{#if station.sequence}
+														<p class="text-xs font-black tabular-nums tracking-widest text-indigo-600 dark:text-indigo-400 mt-0.5">
+															{station.sequence}
+														</p>
+													{/if}
+													{#if station.launchType}
+														<p class="text-[10px] font-semibold text-zinc-400 mt-0.5 leading-snug">
+															{launchTypeLabel(station.launchType)}
+														</p>
+													{/if}
+												</div>
+											</div>
+										</td>
+										{#each dynamicEventData.rawTeams ?? dynamicEventData.teams as team}
+											<td class="py-3 px-3 text-center align-top">
+												{#if team.scores[station.stationIndex] !== undefined}
+													<span
+														class="inline-flex items-center justify-center h-8 w-8 rounded-full font-bold text-xs {team
+															.scores[station.stationIndex] === station.totalClays * 3
+															? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'
+															: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300'}"
+													>
+														{team.scores[station.stationIndex]}
+													</span>
+													<p
+														class="mt-1 text-[10px] font-bold tabular-nums tracking-tight"
+														title="Presentations 1 · 2 · 3"
+													>
+														{#each (team.presentationScores?.[station.stationIndex] ?? [null, null, null]) as hit, pi}
+															{#if pi > 0}<span class="text-zinc-400 dark:text-zinc-600"> · </span>{/if}
+															<span
+																class={isPerfectPres(hit, station.totalClays)
+																	? 'text-green-600 dark:text-green-400'
+																	: 'text-zinc-500 dark:text-zinc-400'}
+															>
+																{hit === null || hit === undefined ? '–' : hit}
+															</span>
+														{/each}
+													</p>
+												{:else}
+													<span class="text-zinc-300 dark:text-zinc-800 text-xs">-</span>
+												{/if}
+											</td>
+										{/each}
+									</tr>
+								{/each}
+							</tbody>
+						</table>
 					</div>
 				</div>
 

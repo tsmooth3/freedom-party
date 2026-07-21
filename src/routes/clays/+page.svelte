@@ -8,7 +8,7 @@
 	import type { PageData } from './$types';
 
 	// Images for active dynamic visual displays
-	import blankMenu from '$lib/images/blank_menu.png';
+	import StandMenuDiagram from '$lib/components/StandMenuDiagram.svelte';
 
 	// Svelte 5 props
 	let { data } = $props<{ data: PageData }>();
@@ -38,25 +38,6 @@
 	const isSignedIn = $derived(Boolean(data.user));
 	const isEventComplete = $derived(selectedEvent?.eventState === 'COMPLETE');
 	const showScoringUI = $derived(Boolean(selectedEvent) && !isEventComplete && isSignedIn);
-
-	// Trap coordinates mapped precisely to the blank_menu layout template
-	const trapCoordinates: Record<number, { x: number; y: number }> = {
-		1: { x: 17, y: 10 },
-		2: { x: 83, y: 10 },
-		3: { x: 82, y: 80 },
-		4: { x: 50, y: 92 },
-		5: { x: 18, y: 80 }
-	};
-	// Shooter Stand Center coordinate
-	const shooterStand = { x: 50, y: 73 };
-
-	// Launch checkboxes coordinates on blank_menu template
-	const launchTypeCheckboxes: Record<string, { x: number; y: number }> = {
-		'REPORT_TRIPLE': { x: 23.3, y: 6.3 },
-		'TRIPLE_1_PLUS_2': { x: 54.4, y: 6.3 },
-		'TRIPLE_2_PLUS_1': { x: 23.3, y: 11.2 },
-		'QUAD_2_PLUS_2': { x: 54.4, y: 11.2 }
-	};
 
 	// Derived states using runes
 	const activeTeam = $derived(selectedEvent ? selectedEvent.teams[activeTeamIndex] : null);
@@ -1034,8 +1015,6 @@
 						{/if}
 					</div>
 
-					{@render cockpitStandings()}
-
 					<!-- Visual Overlay Panel -->
 					<div class="bg-white dark:bg-zinc-950 p-3 md:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3 md:space-y-4 min-w-0">
 						<div class="flex justify-between items-start gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-2 min-w-0">
@@ -1051,22 +1030,16 @@
 							</div>
 						</div>
 
-						<!-- Full menu image visible (contain, not cropped) -->
-						<div class="relative w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
-							<img
-								src={blankMenu}
-								alt="Active Stand layout"
-								class="w-full h-auto max-h-[min(70vh,560px)] object-contain rounded-xl shadow-inner block mx-auto"
+						<!-- Full menu image + presentation flight lines -->
+						<div class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+							<StandMenuDiagram
+								sequence={activeStation?.sequence ?? ''}
+								imgClass="w-full h-auto max-h-[min(70vh,560px)] object-contain rounded-xl shadow-inner block mx-auto"
 							/>
-							<svg
-								viewBox="0 0 100 100"
-								preserveAspectRatio="xMidYMid meet"
-								class="absolute inset-0 w-full h-full pointer-events-none select-none"
-							>
-								<!-- ... (SVG code) ... -->
-							</svg>
 						</div>
 					</div>
+
+					{@render cockpitStandings()}
 				</div>
 				{/if}
 			</div>
