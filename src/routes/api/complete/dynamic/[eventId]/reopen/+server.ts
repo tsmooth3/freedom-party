@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
+import { canScoreDynamicEvent } from '$lib/server/eventAuth';
 import type { RequestHandler } from './$types';
 
 /** Re-open a COMPLETE DynamicEvent for score edits (→ ACTIVE). */
@@ -14,14 +15,15 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 	}
 
 	try {
-		const event = await prisma.dynamicEvent.findUnique({ where: { id: eventId } });
+		const event = await prisma.dynamicEvent.findUnique({
+			where: { id: eventId },
+			include: { scorers: { select: { userId: true } } }
+		});
 		if (!event) {
 			return json({ success: false, message: 'Dynamic event not found.' }, { status: 404 });
 		}
 
-		const isCreator = event.creatorId !== null && event.creatorId === locals.user.id;
-		const isAdmin = locals.user.role === 'ADMIN';
-		if (!isAdmin && !isCreator) {
+		if (!canScoreDynamicEvent(locals.user, event)) {
 			return json({ success: false, message: 'Unauthorized to unlock this event.' }, { status: 403 });
 		}
 

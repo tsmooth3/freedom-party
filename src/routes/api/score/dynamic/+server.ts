@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
+import { canScoreDynamicEvent } from '$lib/server/eventAuth';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -21,7 +22,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			include: {
 				round: {
 					include: {
-						event: true
+						event: {
+							include: {
+								scorers: { select: { userId: true } }
+							}
+						}
 					}
 				}
 			}
@@ -32,11 +37,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const event = station.round.event;
-		const isCreator = event.creatorId !== null && event.creatorId === locals.user.id;
-		const isAdmin = locals.user.role === 'ADMIN';
 
-		// Authorize: Only admin or event creator can score
-		if (!isAdmin && !isCreator) {
+		// Authorize: admin, event creator, or granted scorer
+		if (!canScoreDynamicEvent(locals.user, event)) {
 			return json({ success: false, message: 'Unauthorized to score this event.' }, { status: 403 });
 		}
 

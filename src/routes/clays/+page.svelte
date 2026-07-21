@@ -37,7 +37,18 @@
 	let allowEventSetup = $state(true);
 	const isSignedIn = $derived(Boolean(data.user));
 	const isEventComplete = $derived(selectedEvent?.eventState === 'COMPLETE');
-	const showScoringUI = $derived(Boolean(selectedEvent) && !isEventComplete && isSignedIn);
+	const canScoreSelected = $derived(Boolean(selectedEvent?.canScore));
+	const canManageScorers = $derived(Boolean(selectedEvent?.canManageScorers));
+	const showScoringUI = $derived(
+		Boolean(selectedEvent) && !isEventComplete && isSignedIn && canScoreSelected
+	);
+
+	// Manage scorers modal
+	let scorersModalOpen = $state(false);
+	let scorerDraftIds = $state<number[]>([]);
+	let scorerSaveBusy = $state(false);
+	let scorerModalError = $state('');
+	let scorerPickerId = $state('');
 
 	// Derived states using runes
 	const activeTeam = $derived(selectedEvent ? selectedEvent.teams[activeTeamIndex] : null);
@@ -280,7 +291,72 @@
 		headerExpanded = false; // mobile default: minimized sticky header
 		// Completed events: setup permanently blocked for this session; scoring hidden until unlock
 		allowEventSetup = event.eventState !== 'COMPLETE';
+		scorersModalOpen = false;
 	}
+
+	function openScorersModal() {
+		if (!selectedEvent) return;
+		scorerDraftIds = (selectedEvent.scorers ?? []).map((s: any) => s.id);
+		scorerPickerId = '';
+		scorerModalError = '';
+		scorersModalOpen = true;
+	}
+
+	function closeScorersModal() {
+		scorersModalOpen = false;
+		scorerModalError = '';
+	}
+
+	function addScorerFromPicker() {
+		const id = Number(scorerPickerId);
+		if (!Number.isFinite(id) || id <= 0) return;
+		if (selectedEvent?.creator?.id === id) return;
+		if (!scorerDraftIds.includes(id)) scorerDraftIds = [...scorerDraftIds, id];
+		scorerPickerId = '';
+	}
+
+	function removeScorerDraft(id: number) {
+		scorerDraftIds = scorerDraftIds.filter((x) => x !== id);
+	}
+
+	function directoryUser(id: number) {
+		return (data.userDirectory ?? []).find((u: any) => u.id === id);
+	}
+
+	async function saveScorers() {
+		if (!selectedEvent) return;
+		scorerSaveBusy = true;
+		scorerModalError = '';
+		try {
+			const res = await fetch(`/api/shootEvents/dynamic/${selectedEvent.id}/scorers`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ userIds: scorerDraftIds })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || !result.success) {
+				scorerModalError = result.message || 'Failed to update scorers.';
+				return;
+			}
+			const nextScorers = result.scorers ?? [];
+			selectedEvent.scorers = nextScorers;
+			const listed = data.dynamicEvents?.find((e: any) => e.id === selectedEvent.id);
+			if (listed) listed.scorers = nextScorers;
+			scorersModalOpen = false;
+		} catch (err: any) {
+			scorerModalError = err.message || 'Failed to update scorers.';
+		} finally {
+			scorerSaveBusy = false;
+		}
+	}
+
+	const eligibleScorerOptions = $derived.by(() => {
+		const creatorId = selectedEvent?.creator?.id;
+		const dir = data.userDirectory ?? [];
+		return dir.filter(
+			(u: any) => u.id !== creatorId && !scorerDraftIds.includes(u.id)
+		);
+	});
 
 	async function unlockEventForEdit() {
 		if (!selectedEvent) return;
@@ -311,7 +387,7 @@
 
 	// Svelte 5 reactive sync: Keep database updated on who is currently shooting and on-deck in real-time
 	$effect(() => {
-		if (selectedEvent && activeStation && !isSaving) {
+		if (selectedEvent && activeStation && !isSaving && canScoreSelected && !isEventComplete) {
 			fetch('/api/score/dynamic', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -699,7 +775,16 @@
 								<span class="block text-sm font-extrabold uppercase text-zinc-900 dark:text-zinc-50 truncate">{selectedEvent.eventName}</span>
 							</button>
 							<div class="flex items-center gap-1.5 shrink-0">
-								{#if isSignedIn && allowEventSetup}
+								{#if canManageScorers}
+									<button
+										type="button"
+										class="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-base shadow"
+										onclick={(e) => { e.stopPropagation(); openScorersModal(); }}
+										aria-label="Manage scorers"
+										title="Manage scorers"
+									>👥</button>
+								{/if}
+								{#if isSignedIn && allowEventSetup && canScoreSelected}
 									<button
 										type="button"
 										class="w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-base shadow"
@@ -708,7 +793,7 @@
 										title="Event Setup"
 									>⚙️</button>
 								{/if}
-								{#if isSignedIn && isEventComplete}
+								{#if isSignedIn && isEventComplete && canScoreSelected}
 									<button
 										type="button"
 										class="w-10 h-10 flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-base shadow"
@@ -737,53 +822,103 @@
 						</div>
 					{:else}
 						<!-- Expanded (or desktop) -->
-						<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 p-3 md:p-4">
-							<button
-								type="button"
-								class="min-w-0 text-left md:cursor-default flex-1"
-								onclick={() => { if (isMobile) headerExpanded = false; }}
-								aria-label={isMobile ? 'Minimize active event details' : undefined}
-							>
-								<span class="text-xs font-bold uppercase tracking-wider block {isEventComplete ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}">{isEventComplete ? 'Completed Shoot Event' : 'Active Shoot Event'}</span>
-								<span class="text-base md:text-lg font-extrabold uppercase text-zinc-900 dark:text-zinc-50 truncate block">{selectedEvent.eventName}</span>
-								{#if isMobile}
-									<span class="text-[10px] text-zinc-400">Tap to minimize</span>
-								{/if}
-							</button>
-							<div class="flex items-center gap-2 w-full md:w-auto flex-wrap" role="group">
-								{#if isSignedIn && allowEventSetup}
-									<button
-										type="button"
-										class="px-3 md:px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow"
-										onclick={handleEventSetupRedirect}
-									>
-										⚙️ <span class="sm:inline">Event Setup</span>
-									</button>
-								{/if}
-								{#if isSignedIn && isEventComplete}
-									<button
-										type="button"
-										class="px-3 md:px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow"
-										onclick={unlockEventForEdit}
-										disabled={isSaving}
-									>
-										🔓 Unlock &amp; Edit
-									</button>
-								{/if}
-								<a
-									href="/watchEvent/{selectedEvent.id}"
-									target="_blank"
-									class="px-3 md:px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow-sm"
-								>
-									📺 <span class="hidden sm:inline">Watch Leaderboard</span>
-								</a>
+						<div class="flex flex-col gap-3 p-3 md:p-4">
+							<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
 								<button
 									type="button"
-									class="px-3 md:px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg text-sm"
-									onclick={() => { selectedEvent = null; headerExpanded = false; }}
+									class="min-w-0 text-left md:cursor-default flex-1"
+									onclick={() => { if (isMobile) headerExpanded = false; }}
+									aria-label={isMobile ? 'Minimize active event details' : undefined}
 								>
-									← <span class="hidden sm:inline">Switch Event</span>
+									<span class="text-xs font-bold uppercase tracking-wider block {isEventComplete ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}">{isEventComplete ? 'Completed Shoot Event' : 'Active Shoot Event'}</span>
+									<span class="text-base md:text-lg font-extrabold uppercase text-zinc-900 dark:text-zinc-50 truncate block">{selectedEvent.eventName}</span>
+									{#if isMobile}
+										<span class="text-[10px] text-zinc-400">Tap to minimize</span>
+									{/if}
 								</button>
+								<div class="flex items-center gap-2 w-full md:w-auto flex-wrap" role="group">
+									{#if canManageScorers}
+										<button
+											type="button"
+											class="px-3 md:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow"
+											onclick={openScorersModal}
+										>
+											👥 <span class="sm:inline">Scorers</span>
+										</button>
+									{/if}
+									{#if isSignedIn && allowEventSetup && canScoreSelected}
+										<button
+											type="button"
+											class="px-3 md:px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow"
+											onclick={handleEventSetupRedirect}
+										>
+											⚙️ <span class="sm:inline">Event Setup</span>
+										</button>
+									{/if}
+									{#if isSignedIn && isEventComplete && canScoreSelected}
+										<button
+											type="button"
+											class="px-3 md:px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow"
+											onclick={unlockEventForEdit}
+											disabled={isSaving}
+										>
+											🔓 Unlock &amp; Edit
+										</button>
+									{/if}
+									<a
+										href="/watchEvent/{selectedEvent.id}"
+										target="_blank"
+										class="px-3 md:px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold transition rounded-lg text-sm flex items-center gap-1.5 shadow-sm"
+									>
+										📺 <span class="hidden sm:inline">Watch Leaderboard</span>
+									</a>
+									<button
+										type="button"
+										class="px-3 md:px-4 py-2 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg text-sm"
+										onclick={() => { selectedEvent = null; headerExpanded = false; }}
+									>
+										← <span class="hidden sm:inline">Switch Event</span>
+									</button>
+								</div>
+							</div>
+
+							<!-- Creator + scorers -->
+							<div class="rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/40 px-3 py-2.5 space-y-1.5">
+								<div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs">
+									<span class="font-bold uppercase tracking-wider text-zinc-400 shrink-0">Created by</span>
+									{#if selectedEvent.creator}
+										<span class="font-semibold text-zinc-800 dark:text-zinc-100">{selectedEvent.creator.label}</span>
+										<span class="text-zinc-400 truncate">{selectedEvent.creator.email}</span>
+									{:else}
+										<span class="font-medium text-zinc-500 italic">Unassigned</span>
+									{/if}
+								</div>
+								<div class="flex flex-wrap items-start gap-x-2 gap-y-1 text-xs">
+									<span class="font-bold uppercase tracking-wider text-zinc-400 shrink-0 pt-0.5">Also scoring</span>
+									{#if selectedEvent.scorers?.length}
+										<div class="flex flex-wrap gap-1.5 min-w-0">
+											{#each selectedEvent.scorers as scorer}
+												<span
+													class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-100 dark:border-indigo-900/40"
+													title={scorer.email}
+												>
+													{scorer.label}
+												</span>
+											{/each}
+										</div>
+									{:else}
+										<span class="font-medium text-zinc-500">Only the creator (and admins)</span>
+									{/if}
+									{#if canManageScorers}
+										<button
+											type="button"
+											class="text-[11px] font-bold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 hover:underline"
+											onclick={openScorersModal}
+										>
+											Edit access
+										</button>
+									{/if}
+								</div>
 							</div>
 						</div>
 					{/if}
@@ -848,6 +983,100 @@
 						<p class="text-xs text-zinc-500">You can still open the watch leaderboard from the header.</p>
 					</div>
 					{@render cockpitStandings()}
+				{:else if !canScoreSelected}
+					<div class="rounded-2xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20 px-4 py-3 text-center space-y-1">
+						<p class="text-sm font-semibold text-amber-900 dark:text-amber-100">You don't have scoring access on this event</p>
+						<p class="text-xs text-amber-800/80 dark:text-amber-200/70">
+							Ask the creator{#if selectedEvent.creator}<span class="font-semibold"> ({selectedEvent.creator.label})</span>{/if} or an admin to grant access.
+						</p>
+					</div>
+					{@render cockpitStandings()}
+				{/if}
+
+				{#if scorersModalOpen && selectedEvent}
+					<div
+						class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="scorers-modal-title"
+					>
+						<button type="button" class="absolute inset-0 cursor-default" aria-label="Close" onclick={closeScorersModal}></button>
+						<div class="relative w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl p-4 sm:p-5 space-y-4">
+							<div class="flex items-start justify-between gap-3">
+								<div>
+									<h3 id="scorers-modal-title" class="text-base font-extrabold uppercase tracking-wide text-zinc-900 dark:text-zinc-50">Who can score</h3>
+									<p class="text-xs text-zinc-500 mt-0.5">{selectedEvent.eventName}</p>
+								</div>
+								<button type="button" class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-xl leading-none px-1" onclick={closeScorersModal} aria-label="Close">×</button>
+							</div>
+
+							<div class="rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2 space-y-1">
+								<p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Creator (always allowed)</p>
+								{#if selectedEvent.creator}
+									<p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{selectedEvent.creator.label}</p>
+									<p class="text-xs text-zinc-400">{selectedEvent.creator.email}</p>
+								{:else}
+									<p class="text-sm text-zinc-500 italic">No creator on file</p>
+								{/if}
+								<p class="text-[11px] text-zinc-500 pt-1">Admins can always score every event.</p>
+							</div>
+
+							<div class="space-y-2">
+								<p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Additional scorers</p>
+								{#if scorerDraftIds.length === 0}
+									<p class="text-xs text-zinc-500 italic">None yet — only the creator and admins can score.</p>
+								{:else}
+									<ul class="space-y-1.5">
+										{#each scorerDraftIds as uid}
+											{@const u = directoryUser(uid) || selectedEvent.scorers?.find((s: any) => s.id === uid)}
+											<li class="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 dark:border-zinc-800 px-2.5 py-2">
+												<div class="min-w-0">
+													<p class="text-sm font-semibold truncate text-zinc-800 dark:text-zinc-100">{u?.label || u?.name || u?.email || `User #${uid}`}</p>
+													{#if u?.email}
+														<p class="text-[11px] text-zinc-400 truncate">{u.email}</p>
+													{/if}
+												</div>
+												<button
+													type="button"
+													class="shrink-0 text-xs font-bold text-red-600 hover:text-red-700 px-2 py-1"
+													onclick={() => removeScorerDraft(uid)}
+												>Remove</button>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+
+								<div class="flex gap-2 items-center pt-1">
+									<select
+										class="flex-1 min-w-0 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm px-2 py-2"
+										bind:value={scorerPickerId}
+									>
+										<option value="">Add a user…</option>
+										{#each eligibleScorerOptions as u}
+											<option value={String(u.id)}>{u.label} ({u.email})</option>
+										{/each}
+									</select>
+									<button
+										type="button"
+										class="shrink-0 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-bold disabled:opacity-40"
+										onclick={addScorerFromPicker}
+										disabled={!scorerPickerId}
+									>Add</button>
+								</div>
+							</div>
+
+							{#if scorerModalError}
+								<p class="text-sm font-semibold text-red-600">{scorerModalError}</p>
+							{/if}
+
+							<div class="flex gap-2 justify-end pt-1">
+								<button type="button" class="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-sm font-bold" onclick={closeScorersModal} disabled={scorerSaveBusy}>Cancel</button>
+								<button type="button" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50" onclick={saveScorers} disabled={scorerSaveBusy}>
+									{scorerSaveBusy ? 'Saving…' : 'Save'}
+								</button>
+							</div>
+						</div>
+					</div>
 				{/if}
 
 				<!-- Dashboard Layout Grid (hidden while complete/locked / signed out) -->

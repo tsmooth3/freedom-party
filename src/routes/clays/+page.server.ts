@@ -26,12 +26,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	}) as any;
 
-	// 2. Fetch all dynamic shoot events
+	// 2. Fetch all dynamic shoot events (+ ownership / scoring grants)
 	const activeDynamicEvents = await prisma.dynamicEvent.findMany({
 		orderBy: {
 			createdAt: 'desc'
 		},
 		include: {
+			creator: { select: { id: true, name: true, email: true } },
+			scorers: {
+				include: { user: { select: { id: true, name: true, email: true } } },
+				orderBy: { createdAt: 'asc' }
+			},
 			teams: {
 				orderBy: {
 					id: 'asc'
@@ -54,6 +59,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 			}
 		}
 	});
+
+	// Directory for granting score access (signed-in only)
+	const userDirectory = locals.user
+		? await prisma.user.findMany({
+				orderBy: [{ name: 'asc' }, { email: 'asc' }],
+				select: { id: true, name: true, email: true, role: true }
+		  })
+		: [];
+
+	const labelUser = (u: { name: string | null; email: string } | null) =>
+		u ? (u.name && u.name.trim()) || u.email : null;
 
 	return {
 		dbShootEvents,
@@ -89,6 +105,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 				maxPossible
 			}));
 
+			const creator = event.creator
+				? {
+						id: event.creator.id,
+						name: event.creator.name,
+						email: event.creator.email,
+						label: labelUser(event.creator) as string
+				  }
+				: null;
+
+			const scorers = event.scorers.map((s) => ({
+				id: s.user.id,
+				name: s.user.name,
+				email: s.user.email,
+				label: labelUser(s.user) as string
+			}));
+
+			const uid = locals.user?.id;
+			const isAdmin = locals.user?.role === 'ADMIN';
+			const isCreator = creator != null && uid != null && creator.id === uid;
+			const isGrantedScorer = uid != null && scorers.some((s) => s.id === uid);
+			const canScore = Boolean(isAdmin || isCreator || isGrantedScorer);
+			const canManageScorers = Boolean(isAdmin || isCreator);
+
 			return {
 				id: event.id,
 				eventName: event.eventName,
@@ -101,6 +140,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 				podium,
 				winner: podium[0] ?? null,
 				teams,
+				creator,
+				scorers,
+				canScore,
+				canManageScorers,
 				round: event.rounds[0]
 					? {
 							id: event.rounds[0].id,
@@ -117,6 +160,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 					: null
 			};
 		}),
+		userDirectory: userDirectory.map((u) => ({
+			id: u.id,
+			name: u.name,
+			email: u.email,
+			role: u.role,
+			label: labelUser(u) as string
+		})),
 		user: locals.user
 	};
 };

@@ -27,6 +27,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			orderBy: { createdAt: 'desc' },
 			include: {
 				creator: { select: { id: true, name: true, email: true } },
+				scorers: {
+					include: { user: { select: { id: true, name: true, email: true } } },
+					orderBy: { createdAt: 'asc' }
+				},
 				_count: {
 					select: {
 						teams: true,
@@ -78,7 +82,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 						name: event.creator.name,
 						email: event.creator.email
 					}
-				: null
+				: null,
+			scorers: event.scorers.map((s) => ({
+				id: s.user.id,
+				name: s.user.name,
+				email: s.user.email
+			}))
 		})),
 		users: users.map((u) => ({
 			id: u.id,
