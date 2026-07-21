@@ -10,8 +10,8 @@
 		};
 	}>();
 
-	type Tab = 'legacy' | 'dynamic' | 'users';
-	let activeTab = $state<Tab>('legacy');
+	type Tab = 'users' | 'dynamic' | 'legacy';
+	let activeTab = $state<Tab>('users');
 
 	// Shared event purge modal
 	type EventKind = 'legacy' | 'dynamic';
@@ -224,16 +224,16 @@
 		<button
 			type="button"
 			role="tab"
-			aria-selected={activeTab === 'legacy'}
+			aria-selected={activeTab === 'users'}
 			class="rounded-lg px-1.5 py-2.5 text-[11px] sm:text-sm font-bold uppercase tracking-wide transition text-center leading-tight
-				{activeTab === 'legacy'
+				{activeTab === 'users'
 				? 'bg-white dark:bg-zinc-800 text-indigo-600 shadow-sm'
 				: 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}"
-			onclick={() => (activeTab = 'legacy')}
+			onclick={() => (activeTab = 'users')}
 		>
-			Legacy
+			Users
 			<span class="block sm:inline sm:ml-1 opacity-70 font-semibold normal-case"
-				>({data.legacyEvents.length})</span
+				>({data.users.length})</span
 			>
 		</button>
 		<button
@@ -254,16 +254,16 @@
 		<button
 			type="button"
 			role="tab"
-			aria-selected={activeTab === 'users'}
+			aria-selected={activeTab === 'legacy'}
 			class="rounded-lg px-1.5 py-2.5 text-[11px] sm:text-sm font-bold uppercase tracking-wide transition text-center leading-tight
-				{activeTab === 'users'
+				{activeTab === 'legacy'
 				? 'bg-white dark:bg-zinc-800 text-indigo-600 shadow-sm'
 				: 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}"
-			onclick={() => (activeTab = 'users')}
+			onclick={() => (activeTab = 'legacy')}
 		>
-			Users
+			Legacy
 			<span class="block sm:inline sm:ml-1 opacity-70 font-semibold normal-case"
-				>({data.users.length})</span
+				>({data.legacyEvents.length})</span
 			>
 		</button>
 	</div>

@@ -321,55 +321,22 @@
 	<!-- STEP 3: CONFIGURE STATION MENUS -->
 	{#if currentStep === 3}
 		<div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
-			<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-				<div>
-					<h2 class="text-xl font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Step 3: Station Launch Menus</h2>
-					<p class="text-sm text-zinc-500 dark:text-zinc-400">
-						Each station uses the Team 5-Stand layout. Configure the launch logic type and active trap release sequences.
-					</p>
-				</div>
-				<div class="flex gap-2 w-full md:w-auto">
-					<button
-						class="flex-1 md:flex-none px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-lg font-bold transition text-sm"
-						onclick={randomizeTraps}
-					>
-						🎲 Randomize Traps
-					</button>
-					<button
-						class="flex-1 md:flex-none px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/30 rounded-lg font-bold hover:bg-indigo-100 transition text-sm"
-						onclick={addStation}
-					>
-						+ Add Stand
-					</button>
-				</div>
-			</div>
-
-			<!-- Live Analytics & Clay Inventory Tool -->
-			<div class="p-5 rounded-2xl bg-zinc-900 text-white border border-zinc-800 space-y-4 shadow">
-				<div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-					<h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400">📊 Clay Inventory Analytics Tool (Dynamic Event)</h3>
-					<span class="text-xs font-black text-indigo-300">Total Event Clays Required: {clayInventory.totalClays}</span>
-				</div>
-				<div class="grid grid-cols-5 gap-3 text-center">
-					{#each [1, 2, 3, 4, 5] as trap}
-						<div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
-							<span class="text-[10px] text-zinc-500 font-bold uppercase">Trap #{trap}</span>
-							<p class="text-lg font-black text-indigo-400">{clayInventory.counts[trap]}</p>
-							<span class="text-[9px] text-zinc-600 block">clays required</span>
-						</div>
-					{/each}
-				</div>
+			<div>
+				<h2 class="text-xl font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Step 3: Station Launch Menus</h2>
+				<p class="text-sm text-zinc-500 dark:text-zinc-400">
+					Each station uses the Team 5-Stand layout. Configure the launch logic type and active trap release sequences.
+				</p>
 			</div>
 
 			<!-- Menu graphic references side-by-side -->
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-900/30 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-				<div class="space-y-2 text-center">
+				<div class="space-y-2 text-center min-w-0">
 					<h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Layout Menu Map</h3>
-					<img src={blankMenu} alt="Blank Stand Menu Map" class="max-h-60 mx-auto rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
+					<img src={blankMenu} alt="Blank Stand Menu Map" class="w-full h-auto object-contain rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
 				</div>
-				<div class="space-y-2 text-center">
+				<div class="space-y-2 text-center min-w-0">
 					<h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Launch Terminology Reference</h3>
-					<img src={terminology} alt="Presentation Terminology Guide" class="max-h-60 mx-auto rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
+					<img src={terminology} alt="Presentation Terminology Guide" class="w-full h-auto object-contain rounded-lg shadow border border-zinc-200 dark:border-zinc-800" />
 				</div>
 			</div>
 
@@ -424,6 +391,38 @@
 									/>
 								</div>
 							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+
+			<div class="flex flex-col sm:flex-row gap-2 sm:justify-end">
+				<button
+					class="flex-1 sm:flex-none px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-lg font-bold transition text-sm"
+					onclick={randomizeTraps}
+				>
+					🎲 Randomize Traps
+				</button>
+				<button
+					class="flex-1 sm:flex-none px-4 py-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/30 rounded-lg font-bold hover:bg-indigo-100 transition text-sm"
+					onclick={addStation}
+				>
+					+ Add Stand
+				</button>
+			</div>
+
+			<!-- Live Analytics & Clay Inventory Tool -->
+			<div class="p-5 rounded-2xl bg-zinc-900 text-white border border-zinc-800 space-y-4 shadow">
+				<div class="flex justify-between items-center border-b border-zinc-800 pb-2">
+					<h3 class="text-xs font-bold uppercase tracking-widest text-indigo-400">📊 Clay Inventory Analytics Tool (Dynamic Event)</h3>
+					<span class="text-xs font-black text-indigo-300">Total Event Clays Required: {clayInventory.totalClays}</span>
+				</div>
+				<div class="grid grid-cols-5 gap-3 text-center">
+					{#each [1, 2, 3, 4, 5] as trap}
+						<div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 space-y-1">
+							<span class="text-[10px] text-zinc-500 font-bold uppercase">Trap #{trap}</span>
+							<p class="text-lg font-black text-indigo-400">{clayInventory.counts[trap]}</p>
+							<span class="text-[9px] text-zinc-600 block">clays required</span>
 						</div>
 					{/each}
 				</div>
