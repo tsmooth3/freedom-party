@@ -74,6 +74,7 @@ model User {
   createdAt     DateTime       @default(now())
   
   createdEvents DynamicEvent[] @relation("EventCreator")
+  scoringGrants DynamicEventScorer[]
 }
 
 model DynamicEvent {
@@ -92,8 +93,24 @@ model DynamicEvent {
   creatorId       Int?
   creator         User?             @relation("EventCreator", fields: [creatorId], references: [id])
 
+  // Additional users granted permission to score this event
+  scorers         DynamicEventScorer[]
+
   teams           DynamicTeam[]
   rounds          DynamicRound[]
+}
+
+/// Join table: users (besides creator/admin) allowed to score a DynamicEvent
+model DynamicEventScorer {
+  eventId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  event DynamicEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, userId])
+  @@index([userId])
 }
 
 model DynamicTeam {
